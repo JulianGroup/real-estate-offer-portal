@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings - Real Estate Offer Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">Offer<span>Portal</span></div>
+            <div>
+                <a href="index.html" class="btn btn-outline" style="margin-right: 1rem;">Dashboard</a>
+                <a href="login.html" class="btn btn-secondary">Log Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="page-header" style="padding: 2rem 0; margin-bottom: 2rem;">
+        <div class="container">
+            <h1>Account Settings</h1>
+            <p>Manage your profile details and invite team members.</p>
+        </div>
+    </header>
+
+    <main class="container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; max-width: 1000px; padding-bottom: 4rem;">
+        
+        <!-- Profile Settings -->
+        <div class="card">
+            <h2 class="mb-4">My Profile</h2>
+            <form id="settings-form">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="set-name" class="form-control" placeholder="Loading..." required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="set-email" class="form-control" placeholder="Loading..." disabled>
+                    <small class="text-muted">Email cannot be changed.</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mobile Number</label>
+                    <input type="tel" id="set-mobile" class="form-control" placeholder="Loading..." required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">State License Number (DRE)</label>
+                    <input type="text" id="set-dre" class="form-control" placeholder="Loading..." required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Name of Brokerage</label>
+                    <input type="text" id="set-brokerage" class="form-control" placeholder="Loading..." required>
+                </div>
+                <button type="submit" id="btn-save-settings" class="btn btn-primary mt-4">Save Profile</button>
+            </form>
+        </div>
+
+        <!-- Team Management -->
+        <div class="card">
+            <h2 class="mb-4">Team & Co-Agents</h2>
+            <p class="text-muted mb-4">Invite assistants or co-agents to help manage your property listings and review offers.</p>
+            
+            <div style="border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1rem; margin-bottom: 1rem;">Active Team Members</h3>
+                <div id="team-members-list">
+                    <p class="text-muted" style="font-size: 0.9rem;">Loading team...</p>
+                </div>
+            </div>
+
+            <form id="team-invite-form">
+                <h3 style="font-size: 1rem; margin-bottom: 1rem;">Invite New Member</h3>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="invite-email" class="form-control" placeholder="colleague@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select id="invite-role" class="form-control">
+                        <option value="Assistant">Assistant (Can view/edit listings & offers)</option>
+                        <option value="Co-Agent">Co-Agent (Listed on public portals)</option>
+                    </select>
+                </div>
+                <button type="submit" id="btn-send-invite" class="btn btn-secondary mt-2">Send Invite</button>
+            </form>
+        </div>
+
+    </main>
+    <script type="module" src="app.js?v=4"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offer Management - 123 Maple Street</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">Offer<span>Portal</span></div>
+            <div>
+                <a href="index.html" class="btn btn-outline" style="margin-right: 1rem;">Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="page-header" style="padding: 2rem 0; margin-bottom: 2rem;">
+        <div class="container flex justify-between items-center">
+            <div>
+                <h1 id="prop-address-header">Loading Property...</h1>
+                <p>Manage and compare all offers received for this property.</p>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <a href="#" id="link-manual-offer" class="btn btn-primary" style="background-color: var(--surface); color: var(--primary); border: 1px solid var(--primary);">+ Manually Enter Offer</a>
+                <a href="#" id="link-seller-presentation" class="btn btn-secondary" target="_blank">Generate Seller Link</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-bottom: 4rem;">
+        
+        <h2 class="mb-4" id="offers-count-header">Received Offers (0)</h2>
+        
+        <div id="offers-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Offers will be dynamically injected here -->
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius-md);">
+                <p class="text-muted">Loading offers...</p>
+            </div>
+        </div>
+    </main>
+    <script type="module" src="app.js?v=2"></script>
+</body>
+</html>

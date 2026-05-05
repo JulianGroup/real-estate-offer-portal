@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Registration - Real Estate Offer Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background-image: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); padding: 2rem 0;">
+    
+    <div class="card" style="width: 100%; max-width: 600px; margin: 0 1rem;">
+        <div class="text-center mb-6">
+            <div class="logo" style="justify-content: center; font-size: 2rem; margin-bottom: 1rem;">Offer<span>Portal</span></div>
+            <h1 style="color: var(--text-main); font-size: 1.5rem;">Create Agent Account</h1>
+            <p class="text-muted">Register to start managing offers and creating property portals.</p>
+        </div>
+
+        <form id="register-form">
+            
+            <h3 class="mb-4" style="font-size: 1.1rem; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Account Details</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="reg-name" class="form-control" placeholder="Jane Doe" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="reg-email" class="form-control" placeholder="jane@example.com" required>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="reg-password" class="form-control" placeholder="••••••••" minlength="6" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" id="reg-confirm" class="form-control" placeholder="••••••••" minlength="6" required>
+                </div>
+            </div>
+
+            <h3 class="mb-4 mt-4" style="font-size: 1.1rem; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Professional Information</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Mobile Number</label>
+                    <input type="tel" id="reg-mobile" class="form-control" placeholder="(555) 123-4567" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">State License Number (DRE)</label>
+                    <input type="text" id="reg-dre" class="form-control" placeholder="e.g. 01234567" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Name of Brokerage</label>
+                <input type="text" id="reg-brokerage" class="form-control" placeholder="e.g. Keller Williams Luxury" required>
+            </div>
+
+            <button type="submit" id="btn-register" class="btn btn-primary mt-4" style="width: 100%;">Create Account</button>
+            
+            <div class="text-center mt-4">
+                <p class="text-muted">Already have an account? <a href="login.html" style="font-weight: 500;">Log in here</a></p>
+            </div>
+        </form>
+    </div>
+
+    <script type="module" src="app.js?v=8"></script>
+</body>
+</html>

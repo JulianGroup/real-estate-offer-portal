@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manually Enter Offer - 123 Maple Street</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">Offer<span>Portal</span></div>
+            <div>
+                <a href="offer_management.html" class="btn btn-outline" style="margin-right: 1rem;">Back to Offers</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="page-header" style="padding: 2rem 0; margin-bottom: 2rem;">
+        <div class="container">
+            <h1>Manually Enter Offer</h1>
+            <p>Upload an offer received via email on behalf of a buyer's agent for 123 Maple Street.</p>
+        </div>
+    </header>
+
+    <main class="container" style="max-width: 800px; padding-bottom: 4rem;">
+        
+        <div class="card">
+            <form id="manual-offer-form">
+                
+                <h3 class="mb-4" style="font-size: 1.1rem; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Buyer's Agent Information</h3>
+                <p class="text-muted mb-4">Enter the details of the agent who submitted this offer.</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Agent Name</label>
+                        <input type="text" id="agent-name" class="form-control" placeholder="e.g. John Smith" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Agent Email</label>
+                        <input type="email" id="agent-email" class="form-control" placeholder="john@brokerage.com" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Brokerage Name (Optional)</label>
+                    <input type="text" id="agent-brokerage" class="form-control" placeholder="e.g. Compass">
+                </div>
+
+                <div style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%); border: 1px dashed rgba(147, 51, 234, 0.4); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <h4 style="color: #6D28D9; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem;">
+                        ✨ AI Auto-Fill Magic
+                    </h4>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; max-width: 400px;">Save time! Upload the Purchase Agreement PDF and let our AI instantly extract all the terms and contingencies.</p>
+                    <button type="button" class="btn btn-primary" id="btn-ai-autofill" onclick="simulateAIAutoFill()" style="background: linear-gradient(135deg, var(--primary) 0%, #7C3AED 100%); border: none; padding: 0.75rem 1.5rem; font-weight: 600; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);">✨ Auto-Fill from PDF</button>
+                </div>
+
+                <h3 class="mb-4 mt-6" style="font-size: 1.1rem; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-top: 2rem;">Offer Details</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Offer Price</label>
+                        <input type="text" id="ai-price" class="form-control currency-input" placeholder="$0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Initial Deposit (Earnest Money)</label>
+                        <input type="text" id="ai-deposit" class="form-control currency-input" placeholder="$0" required>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Down Payment (%)</label>
+                        <input type="number" id="ai-down" class="form-control" placeholder="e.g. 20" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Financing Type</label>
+                        <select id="ai-finance" class="form-control">
+                            <option>Conventional</option>
+                            <option>FHA</option>
+                            <option>VA</option>
+                            <option>Cash</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Close of Escrow (COE)</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="number" id="ai-coe" class="form-control" style="width: 100px;" placeholder="e.g. 30" required>
+                        <span>Days after acceptance</span>
+                    </div>
+                </div>
+
+                <h3 class="mb-4 mt-6" style="font-size: 1.1rem; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-top: 2rem;">Contingency Periods</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Loan Approval (Days)</label>
+                        <input type="number" id="ai-loan" class="form-control" placeholder="e.g. 21" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Appraisal (Days)</label>
+                        <input type="number" id="ai-appraisal" class="form-control" placeholder="e.g. 17" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Home Inspection (Days)</label>
+                        <input type="number" id="ai-inspection" class="form-control" placeholder="e.g. 10" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Other Terms/Contingencies</label>
+                    <textarea class="form-control" rows="2" placeholder="Any other terms or notes..."></textarea>
+                </div>
+
+                <h3 class="mb-4 mt-6" style="font-size: 1.1rem; color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-top: 2rem;">Upload Documents</h3>
+                <p class="text-muted mb-4">Upload the PDFs received from the buyer's agent.</p>
+
+                <div class="form-group">
+                    <label class="form-label">Purchase Agreement (RPA)</label>
+                    <label for="ai-file-rpa" class="file-upload-area" style="cursor: pointer; display: block; text-align: center; padding: 1rem;">
+                        <p id="ai-file-rpa-text" style="margin: 0;">📄 Click to upload Signed Purchase Offer (.pdf)</p>
+                        <input type="file" id="ai-file-rpa" accept=".pdf" multiple style="display: none;" onchange="document.getElementById('ai-file-rpa-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Click to upload Signed Purchase Offer (.pdf)')">
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Source of Funds / Pre-Approval</label>
+                    <label for="ai-file-funds" class="file-upload-area" style="cursor: pointer; display: block; text-align: center; padding: 1rem;">
+                        <p id="ai-file-funds-text" style="margin: 0;">📄 Click to upload Financial Docs (.pdf)</p>
+                        <input type="file" id="ai-file-funds" accept=".pdf" multiple style="display: none;" onchange="document.getElementById('ai-file-funds-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Click to upload Financial Docs (.pdf)')">
+                    </label>
+                </div>
+                
+                <div class="flex justify-between mt-6 pt-4" style="border-top: 1px solid var(--border);">
+                    <a href="offer_management.html" class="btn btn-outline">Cancel</a>
+                    <button type="submit" id="btn-submit-manual" class="btn btn-primary">Save Offer</button>
+                </div>
+            </form>
+        </div>
+
+    </main>
+    <script type="module" src="app.js"></script>
+</body>
+</html>

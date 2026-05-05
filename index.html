@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Dashboard - Real Estate Offer Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">Offer<span>Portal</span></div>
+            <div>
+                <a href="index.html" class="btn btn-outline" style="margin-right: 0.5rem;">Dashboard</a>
+                <a href="admin_dashboard.html" id="link-admin-panel" class="btn btn-outline" style="margin-right: 0.5rem; border-color: #8b5cf6; color: #8b5cf6; display: none;">👑 Admin Panel</a>
+                <a href="settings.html" class="btn btn-outline" style="margin-right: 1rem;">⚙️ Settings</a>
+                <a href="login.html" class="btn btn-secondary">Log Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container">
+            <h1 class="user-name-display">Agent Dashboard</h1>
+            <p>Welcome back, <span class="user-name-display">Agent</span>. Manage your active listings and review incoming offers.</p>
+            <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 0.5rem;" id="current-user-email-display">Logged in as: Loading...</p>
+        </div>
+    </header>
+
+    <main class="container" style="padding-bottom: 4rem;">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-4">
+                <h2>Active Listings</h2>
+                <a href="create_property.html" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">+ New Listing</a>
+            </div>
+            <div class="lender-widget" style="margin: 0; padding: 0.5rem 1rem;">
+                <div class="badge">Preferred Lender</div>
+                <div class="lender-info" style="display:flex; gap: 1rem; align-items:center;">
+                    <span style="font-weight:600; color:var(--primary);">Rakesh Jain</span>
+                    <a href="#" style="font-size: 0.8rem; text-decoration: underline;">Change Lender</a>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;" id="listings-container">
+            <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius-md);">
+                <p class="text-muted" id="listings-loading">Loading your properties...</p>
+            </div>
+        </div>
+    </main>
+    <script type="module" src="app.js?v=7"></script>
+</body>
+</html>

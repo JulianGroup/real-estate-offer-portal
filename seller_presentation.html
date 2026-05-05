@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offer Presentation - 123 Maple Street</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="background-color: #f8fafc;">
+    <nav class="navbar" style="justify-content: center; background-color: white; border-bottom: 1px solid var(--border);">
+        <div class="container" style="display: flex; justify-content: center;">
+            <div class="logo" style="font-size: 1.75rem;">Offer<span>Portal</span></div>
+        </div>
+    </nav>
+
+    <header class="page-header" style="padding: 3rem 0; margin-bottom: 2rem; background: linear-gradient(135deg, var(--primary) 0%, #1e3a8a 100%); color: white;">
+        <div class="container text-center" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <h1 id="prop-address-header" style="color: white; margin-bottom: 0.5rem; text-align: center;">Loading Property...</h1>
+            <p style="opacity: 0.9; font-size: 1.1rem; text-align: center; width: 100%;" id="agent-info-header">Loading Listing Agent...</p>
+        </div>
+    </header>
+
+    <main class="container" style="max-width: 900px; padding-bottom: 4rem;">
+        
+        <div style="background: white; padding: 2rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); margin-bottom: 2rem; text-align: center;">
+            <h2 style="margin-bottom: 1rem; color: var(--text-dark);">Your Offers at a Glance</h2>
+            <p class="text-muted" style="max-width: 600px; margin: 0 auto;">Review the details of all offers received for your property. Your agent will walk you through the strengths and considerations of each one.</p>
+        </div>
+
+        <h3 class="mb-4" id="offers-count-header" style="font-size: 1.25rem; text-align: center;">Received Offers (0)</h3>
+        
+        <div id="offers-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Offers will be dynamically injected here -->
+            <div style="text-align: center; padding: 3rem; background: white; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                <p class="text-muted">Loading offers...</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 3rem; text-align: center; padding-top: 2rem; border-top: 1px solid var(--border);">
+            <p class="text-muted" style="font-size: 0.9rem;" id="seller-footer-text">Have questions about these offers? Contact your agent.</p>
+        </div>
+    </main>
+    <script type="module" src="app.js?v=5"></script>
+</body>
+</html>

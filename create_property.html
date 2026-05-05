@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Listing - Real Estate Offer Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">Offer<span>Portal</span></div>
+            <div>
+                <a href="index.html" class="btn btn-outline" style="margin-right: 1rem;">Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="page-header" style="padding: 2rem 0; margin-bottom: 2rem;">
+        <div class="container">
+            <h1>Create Property Portal</h1>
+            <p>Generate a unique link to collect offers for your new listing.</p>
+        </div>
+    </header>
+
+    <main class="container" style="max-width: 800px;">
+        <div class="card">
+            <form id="create-property-form">
+                <div class="form-group">
+                    <label class="form-label">Property Address</label>
+                    <input type="text" id="prop-address" class="form-control" placeholder="e.g. 123 Maple Street, Anytown, CA" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Asking Price</label>
+                    <input type="text" id="prop-price" class="form-control currency-input" placeholder="$0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Property Description (Optional)</label>
+                    <textarea id="prop-desc" class="form-control" rows="4" placeholder="Brief description to show on the offer portal..."></textarea>
+                </div>
+                
+                <div class="form-group" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+                    <h3>Owner Details</h3>
+                    <p class="text-muted mb-4">Internal use only. Not shown to buyers.</p>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label class="form-label">Owner Name</label>
+                        <input type="text" id="prop-owner-name" class="form-control" placeholder="e.g. John Doe">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label class="form-label">Owner Email</label>
+                            <input type="email" id="prop-owner-email" class="form-control" placeholder="john@example.com">
+                        </div>
+                        <div>
+                            <label class="form-label">Owner Mobile</label>
+                            <input type="text" id="prop-owner-mobile" class="form-control" placeholder="(555) 123-4567">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Property Photo</label>
+                    <label for="prop-image" class="file-upload-area" style="cursor: pointer; display: block; text-align: center;">
+                        <div style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;">📁</div>
+                        <p id="prop-image-text">Click to select a property image (.jpg, .png)</p>
+                        <input type="file" id="prop-image" accept="image/*" style="display: none;" onchange="document.getElementById('prop-image-text').innerText = this.files[0] ? '✅ ' + this.files[0].name : 'Click to select a property image (.jpg, .png)'">
+                    </label>
+                </div>
+
+                <div class="form-group" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+                    <h3>Lender Partner</h3>
+                    <p class="text-muted mb-4">Select the preferred lender to display on this portal.</p>
+                    <select class="form-control mb-4">
+                        <option>Rakesh Jain (Default)</option>
+                        <option>Other / Paid Placement</option>
+                    </select>
+                </div>
+                
+                <div class="flex justify-between mt-4">
+                    <a href="index.html" class="btn btn-outline">Cancel</a>
+                    <button type="submit" id="btn-create-property" class="btn btn-primary">Generate Portal Link</button>
+                </div>
+            </form>
+        </div>
+    </main>
+    <script type="module" src="app.js?v=2"></script>
+</body>
+</html>
