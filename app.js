@@ -1,7 +1,7 @@
 import { 
     auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
     onAuthStateChanged, signOut, updateProfile, doc, setDoc, getDoc,
-    collection, addDoc, query, where, onSnapshot, getDocs
+    collection, addDoc, query, where, onSnapshot, getDocs, sendPasswordResetEmail
 } from './firebase-config.js';
 
 // Helper to compress image to Base64
@@ -44,8 +44,8 @@ const initializeAppLogic = () => {
     // 1. Auth State Observer
     onAuthStateChanged(auth, (user) => {
         const path = window.location.pathname;
-        const isAuthPage = path.includes('login.html') || path.includes('register.html');
-        const isPublicPage = path.includes('offer_submission.html') || path.includes('seller_presentation.html');
+        const isAuthPage = path.includes('login') || path.includes('register');
+        const isPublicPage = path.includes('offer_submission') || path.includes('seller_presentation');
 
         if (user) {
             // User is signed in.
@@ -465,7 +465,7 @@ const initializeAppLogic = () => {
             if (!isAuthPage && !isPublicPage) {
                 // If viewing a local file, pathname might just be '/' depending on server.
                 // Usually it's better to explicitly check protected pages, but for this prototype:
-                if (path.includes('index.html') || path.includes('settings.html') || path.includes('create_property') || path.includes('offer_management') || path.includes('edit_property')) {
+                if (path.includes('index') || path === '/' || path.endsWith('real_estate_offer_portal/') || path.includes('settings') || path.includes('create_property') || path.includes('offer_management') || path.includes('edit_property')) {
                     window.location.href = 'login.html';
                 }
             }
@@ -544,9 +544,35 @@ const initializeAppLogic = () => {
                 // onAuthStateChanged will redirect
             } catch (error) {
                 console.error("Login Error:", error);
-                alert("Error logging in: " + error.message);
+                if (error.code === 'auth/unauthorized-domain') {
+                    alert("SECURITY ALERT: This domain has not been authorized in your Firebase Console. Please add 'juliangroup.net' and 'juliangroup.github.io' to the Authorized Domains list in Firebase Auth Settings.");
+                } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    alert("Incorrect email or password. Please try again.");
+                } else {
+                    alert("Error logging in: " + error.message);
+                }
                 btn.disabled = false;
                 btn.innerText = 'Log In';
+            }
+        });
+    }
+
+    // 3.5 Forgot Password Handler
+    const forgotBtn = document.getElementById('btn-forgot-password');
+    if (forgotBtn) {
+        forgotBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            if (!email) {
+                alert("Please enter your email address in the Email field first, then click Forgot Password.");
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("A password reset link has been sent to " + email + "!");
+            } catch (error) {
+                console.error("Reset Password Error:", error);
+                alert("Error sending reset email: " + error.message);
             }
         });
     }
