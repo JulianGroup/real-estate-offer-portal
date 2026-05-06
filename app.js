@@ -912,50 +912,6 @@ const initializeAppLogic = () => {
     const publicOfferForm = document.getElementById('public-offer-form');
     if (publicOfferForm) publicOfferForm.addEventListener('submit', (e) => handleOfferSubmit(e, false));
 
-    // 8. Edit Property Form Handler
-    const editPropForm = document.getElementById('edit-property-form');
-    if (editPropForm) {
-        editPropForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-edit-property');
-            btn.disabled = true;
-            btn.innerText = 'Saving...';
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const propertyId = urlParams.get('id');
-            if (!propertyId) return;
-
-            const address = document.getElementById('edit-address').value;
-            const price = document.getElementById('edit-price').value;
-            const desc = document.getElementById('edit-desc').value;
-            const fileInput = document.getElementById('edit-image');
-
-            try {
-                const updateData = {
-                    address: address,
-                    askingPrice: price,
-                    description: desc,
-                };
-
-                if (fileInput && fileInput.files && fileInput.files.length > 0) {
-                    const compressedImage = await compressImage(fileInput.files[0]);
-                    if (compressedImage) {
-                        updateData.imageUrl = compressedImage;
-                    }
-                }
-
-                await setDoc(doc(db, "properties", propertyId), updateData, { merge: true });
-                
-                alert("Property Updated Successfully!");
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error("Error updating property:", error);
-                alert("Error updating property: " + error.message);
-                btn.disabled = false;
-                btn.innerText = 'Save Changes';
-            }
-        });
-    }
 
     // --- UI FORMATTING & PROTOTYPE LOGIC ---
 
