@@ -299,6 +299,8 @@ const initializeAppLogic = () => {
                             if(ownerNameEl) ownerNameEl.value = data.ownerName || '';
                             if(ownerEmailEl) ownerEmailEl.value = data.ownerEmail || '';
                             if(ownerMobileEl) ownerMobileEl.value = data.ownerMobile || '';
+                            const listingCommEl = document.getElementById('edit-listing-commission');
+                            if(listingCommEl) listingCommEl.value = data.listingCommission || '';
 
                         } else {
                             alert("Property not found or unauthorized.");
@@ -578,6 +580,9 @@ const initializeAppLogic = () => {
             const ownerName = ownerNameEl ? ownerNameEl.value : '';
             const ownerEmail = ownerEmailEl ? ownerEmailEl.value : '';
             const ownerMobile = ownerMobileEl ? ownerMobileEl.value : '';
+            
+            const listingCommEl = document.getElementById('prop-listing-commission');
+            const listingCommission = listingCommEl ? listingCommEl.value : '';
 
             try {
                 let finalImageUrl;
@@ -621,6 +626,7 @@ const initializeAppLogic = () => {
                     ownerName: ownerName,
                     ownerEmail: ownerEmail,
                     ownerMobile: ownerMobile,
+                    listingCommission: listingCommission,
                     createdAt: new Date(),
                     status: 'active',
                     imageUrl: finalImageUrl
@@ -665,6 +671,9 @@ const initializeAppLogic = () => {
             const ownerName = ownerNameEl ? ownerNameEl.value : '';
             const ownerEmail = ownerEmailEl ? ownerEmailEl.value : '';
             const ownerMobile = ownerMobileEl ? ownerMobileEl.value : '';
+            
+            const listingCommEl = document.getElementById('edit-listing-commission');
+            const listingCommission = listingCommEl ? listingCommEl.value : '';
 
             try {
                 let updates = {
@@ -673,7 +682,8 @@ const initializeAppLogic = () => {
                     description: desc,
                     ownerName: ownerName,
                     ownerEmail: ownerEmail,
-                    ownerMobile: ownerMobile
+                    ownerMobile: ownerMobile,
+                    listingCommission: listingCommission
                 };
                 
                 if (fileInput && fileInput.files && fileInput.files.length > 0) {
