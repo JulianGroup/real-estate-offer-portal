@@ -1,7 +1,7 @@
 import { 
     auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
     onAuthStateChanged, signOut, updateProfile, doc, setDoc, getDoc,
-    collection, addDoc, query, where, onSnapshot, getDocs, sendPasswordResetEmail
+    collection, addDoc, query, where, onSnapshot, getDocs, sendPasswordResetEmail, deleteDoc
 } from './firebase-config.js';
 
 // Helper to compress image to Base64
@@ -404,7 +404,10 @@ const initializeAppLogic = () => {
                             card.className = 'card';
                             card.innerHTML = `
                                 <div style="height: 160px; background-color: #E2E8F0; border-radius: var(--radius-md); margin-bottom: 1rem; background-image: url('${data.imageUrl || 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=400&q=80'}'); background-size: cover; background-position: center; position: relative;">
-                                    <a href="edit_property.html?id=${id}" class="btn btn-outline" style="position: absolute; top: 0.5rem; right: 0.5rem; background: white; padding: 0.25rem 0.5rem; font-size: 0.8rem; border: none; box-shadow: var(--shadow-sm);">✏️ Edit</a>
+                                    <div style="position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.5rem;">
+                                        <button onclick="window.deleteProperty('${id}')" class="btn btn-outline" style="background: white; padding: 0.25rem 0.5rem; font-size: 0.8rem; border: 1px solid var(--danger); color: var(--danger); box-shadow: var(--shadow-sm);">🗑️ Delete</button>
+                                        <a href="edit_property.html?id=${id}" class="btn btn-outline" style="background: white; padding: 0.25rem 0.5rem; font-size: 0.8rem; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">✏️ Edit</a>
+                                    </div>
                                 </div>
                                 <h3 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${data.address}">${data.address}</h3>
                                 <p class="text-muted mb-4">${data.askingPrice} • <span id="offer-count-${id}">Loading Offers...</span></p>
@@ -1085,6 +1088,18 @@ window.makeMeAdmin = async () => {
         window.location.reload();
     } catch(err) {
         alert("Error upgrading account: " + err.message);
+    }
+};
+
+window.deleteProperty = async (propertyId) => {
+    if (confirm("Are you sure you want to completely delete this listing and all of its data? This action cannot be undone.")) {
+        try {
+            await deleteDoc(doc(db, "properties", propertyId));
+            alert("Property listing has been deleted.");
+        } catch (error) {
+            console.error("Error deleting property:", error);
+            alert("Error deleting property: " + error.message);
+        }
     }
 };
 
