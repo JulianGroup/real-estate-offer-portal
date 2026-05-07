@@ -38,14 +38,14 @@ const compressImage = (file) => {
 };
 
 const initializeAppLogic = () => {
+    const path = window.location.pathname;
+    const isAuthPage = path.includes('login') || path.includes('register');
+    const isPublicPage = path.includes('offer_submission') || path.includes('seller_presentation');
 
     // --- FIREBASE AUTHENTICATION LOGIC ---
 
     // 1. Auth State Observer
     onAuthStateChanged(auth, (user) => {
-        const path = window.location.pathname;
-        const isAuthPage = path.includes('login') || path.includes('register');
-        const isPublicPage = path.includes('offer_submission') || path.includes('seller_presentation');
 
         if (user) {
             // User is signed in.
