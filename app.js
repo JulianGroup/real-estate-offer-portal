@@ -463,11 +463,7 @@ const initializeAppLogic = () => {
             console.log("No user signed in.");
             // If they are NOT on an auth page or a public page, redirect to login
             if (!isAuthPage && !isPublicPage) {
-                // If viewing a local file, pathname might just be '/' depending on server.
-                // Usually it's better to explicitly check protected pages, but for this prototype:
-                if (path.includes('index') || path === '/' || path.endsWith('real_estate_offer_portal/') || path.includes('settings') || path.includes('create_property') || path.includes('offer_management') || path.includes('edit_property')) {
-                    window.location.href = 'login.html';
-                }
+                window.location.href = 'login.html';
             }
         }
     });
