@@ -67,6 +67,18 @@
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
+                        <label class="form-label">Buyer Agent Compensation (%)</label>
+                        <input type="number" id="ai-agent-comp-pct" class="form-control" placeholder="e.g. 2.00" step="0.01" min="0" max="100">
+                        <small id="ai-agent-comp-dollar" class="text-muted" style="display:block; margin-top:0.25rem;">$0.00</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Seller Credit</label>
+                        <input type="text" id="ai-seller-credit" class="form-control currency-input" placeholder="$0">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
                         <label class="form-label">Down Payment (%)</label>
                         <input type="number" id="ai-down" class="form-control" placeholder="e.g. 20" required>
                     </div>

@@ -726,6 +726,17 @@ const initializeAppLogic = () => {
         const appraisal = document.getElementById('ai-appraisal').value;
         const inspection = document.getElementById('ai-inspection').value;
 
+        const compPct = document.getElementById('ai-agent-comp-pct') ? document.getElementById('ai-agent-comp-pct').value : '';
+        let compDollar = 0;
+        if (compPct && price) {
+            const priceNum = parseFloat(price.replace(/[^0-9.-]+/g,""));
+            const pctNum = parseFloat(compPct);
+            if (!isNaN(priceNum) && !isNaN(pctNum)) {
+                compDollar = (priceNum * (pctNum / 100)).toFixed(2);
+            }
+        }
+        const sellerCredit = document.getElementById('ai-seller-credit') ? document.getElementById('ai-seller-credit').value : '';
+
         // Capture uploaded document names
         const docs = [];
         const fileRpa = document.getElementById('ai-file-rpa');
@@ -762,6 +773,9 @@ const initializeAppLogic = () => {
                 loanDays: parseInt(loan),
                 appraisalDays: parseInt(appraisal),
                 inspectionDays: parseInt(inspection),
+                buyerAgentCompPct: compPct,
+                buyerAgentCompDollar: compDollar,
+                sellerCredit: sellerCredit,
                 documents: docs,
                 status: 'pending',
                 submittedAt: new Date(),
@@ -979,6 +993,8 @@ const initializeAppLogic = () => {
                                 <div>
                                     <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${data.price} ${highestBadge}</h3>
                                     <p class="text-muted" style="margin-bottom: 0.5rem;">${data.financingType} Loan • ${data.downPaymentPercent}% Down • By: ${data.buyerAgentName} (${data.buyerAgentBrokerage || 'Independent'})</p>
+                                    ${data.buyerAgentCompPct ? `<p class="text-muted" style="margin-bottom: 0.5rem;"><strong>Buyer Agent Comp:</strong> ${data.buyerAgentCompPct}% ($${parseFloat(data.buyerAgentCompDollar).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</p>` : ''}
+                                    ${data.sellerCredit ? `<p class="text-muted" style="margin-bottom: 0.5rem;"><strong>Seller Credit:</strong> ${data.sellerCredit}</p>` : ''}
                                     <div style="display: flex; gap: 0.5rem; font-size: 0.8rem; flex-wrap: wrap;" id="offer-${offerId}-dates">
                                         <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);"><strong>Deposit:</strong> ${data.deposit}</span>
                                         <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${data.coeDays}"><strong>COE:</strong> ${data.coeDays} Days</span>
@@ -1078,6 +1094,28 @@ const initializeAppLogic = () => {
             formatPhoneInput({ target: input });
         }
     });
+
+    // Agent Compensation Calculator
+    const calculateAgentComp = () => {
+        const priceInput = document.getElementById('ai-price');
+        const pctInput = document.getElementById('ai-agent-comp-pct');
+        const dollarText = document.getElementById('ai-agent-comp-dollar');
+        if (priceInput && pctInput && dollarText) {
+            const priceVal = priceInput.value.replace(/[^0-9.-]+/g, "");
+            const price = parseFloat(priceVal);
+            const pct = parseFloat(pctInput.value);
+            if (!isNaN(price) && !isNaN(pct)) {
+                dollarText.innerText = "$" + (price * (pct / 100)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            } else {
+                dollarText.innerText = "$0.00";
+            }
+        }
+    };
+
+    const priceEl = document.getElementById('ai-price');
+    const pctEl = document.getElementById('ai-agent-comp-pct');
+    if (priceEl) priceEl.addEventListener('input', calculateAgentComp);
+    if (pctEl) pctEl.addEventListener('input', calculateAgentComp);
 };
 
 if (document.readyState === 'loading') {
