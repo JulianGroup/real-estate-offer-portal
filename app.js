@@ -485,6 +485,13 @@ const initializeAppLogic = () => {
             const dre = document.getElementById('reg-dre').value;
             const brokerage = document.getElementById('reg-brokerage').value;
 
+            if (mobile.replace(/\D/g, "").length !== 10) {
+                alert("Please enter a valid 10-digit mobile number.");
+                btn.disabled = false;
+                btn.innerText = 'Create Account';
+                return;
+            }
+
             if (password !== confirm) {
                 alert("Passwords do not match!");
                 btn.disabled = false;
@@ -604,6 +611,13 @@ const initializeAppLogic = () => {
             const mobile = document.getElementById('set-mobile').value;
             const dre = document.getElementById('set-dre').value;
             const brokerage = document.getElementById('set-brokerage').value;
+
+            if (mobile.replace(/\D/g, "").length !== 10) {
+                alert("Please enter a valid 10-digit mobile number.");
+                btn.disabled = false;
+                btn.innerText = 'Save Profile';
+                return;
+            }
 
             try {
                 // merge: true allows updating specific fields without overwriting others like createdAt
