@@ -938,116 +938,128 @@ const initializeAppLogic = () => {
                         }
                     }
                 }
-            }).catch(err => console.error("Error fetching property:", err));
 
-            // Fetch offers for this property
-            const offersContainer = document.getElementById('offers-container');
-            if (offersContainer) {
-                const qOffers = query(collection(db, "offers"), where("propertyId", "==", propertyId));
-                onSnapshot(qOffers, (querySnapshot) => {
-                    const countHeader = document.getElementById('offers-count-header');
-                    if (countHeader) countHeader.innerText = `Received Offers (${querySnapshot.size})`;
-                    offersContainer.innerHTML = '';
+                // Fetch offers for this property
+                const offersContainer = document.getElementById('offers-container');
+                if (offersContainer) {
+                    const qOffers = query(collection(db, "offers"), where("propertyId", "==", propertyId));
+                    onSnapshot(qOffers, (querySnapshot) => {
+                        const countHeader = document.getElementById('offers-count-header');
+                        if (countHeader) countHeader.innerText = `Received Offers (${querySnapshot.size})`;
+                        offersContainer.innerHTML = '';
 
-                    if (querySnapshot.empty) {
-                        offersContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius-md);"><p class="text-muted">No offers received yet.</p></div>';
-                        return;
-                    }
+                        if (querySnapshot.empty) {
+                            offersContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius-md);"><p class="text-muted">No offers received yet.</p></div>';
+                            return;
+                        }
 
-                    let highestPrice = 0;
-                    querySnapshot.forEach(snap => {
-                        const data = snap.data();
-                        const p = parseInt((data.price || "0").replace(/\D/g, ""));
-                        if (p > highestPrice) highestPrice = p;
-                    });
+                        let highestPrice = 0;
+                        querySnapshot.forEach(snap => {
+                            const data = snap.data();
+                            const p = parseInt((data.price || "0").replace(/\D/g, ""));
+                            if (p > highestPrice) highestPrice = p;
+                        });
 
-                    querySnapshot.forEach((docSnap) => {
-                        const data = docSnap.data();
-                        const offerId = docSnap.id;
-                        const priceVal = parseInt((data.price || "0").replace(/\D/g, ""));
-                        const isHighest = priceVal === highestPrice && priceVal > 0;
-                        
-                        const borderColor = isHighest ? 'var(--success)' : 'var(--border)';
-                        const highestBadge = isHighest ? `<span class="badge" style="background-color: rgba(56, 161, 105, 0.1); color: var(--success); margin-left: 0.5rem;">Highest Offer</span>` : '';
+                        querySnapshot.forEach((docSnap) => {
+                            const data = docSnap.data();
+                            const offerId = docSnap.id;
+                            const priceVal = parseInt((data.price || "0").replace(/\D/g, ""));
+                            const isHighest = priceVal === highestPrice && priceVal > 0;
+                            
+                            const currentListingCommission = parseFloat(propData.listingCommission) || 0;
+                            let listingAgentCompDollar = 0;
+                            if (currentListingCommission > 0 && priceVal > 0) {
+                                listingAgentCompDollar = priceVal * (currentListingCommission / 100);
+                            }
+                            
+                            let buyerAgentCompDollar = parseFloat(data.buyerAgentCompDollar) || 0;
+                            let sellerCreditVal = parseInt((data.sellerCredit || "0").replace(/\D/g, "")) || 0;
+                            
+                            let buyersNet = priceVal - buyerAgentCompDollar - listingAgentCompDollar - sellerCreditVal;
 
-                        
-                        window.offerDocumentsCache = window.offerDocumentsCache || {};
-                        window.offerDocumentsCache[offerId] = data.documents || [];
+                            const borderColor = isHighest ? 'var(--success)' : 'var(--border)';
+                            const highestBadge = isHighest ? `<span class="badge" style="background-color: rgba(56, 161, 105, 0.1); color: var(--success); margin-left: 0.5rem;">Highest Offer</span>` : '';
 
-                        const isSellerView = window.location.pathname.includes('seller_presentation.html');
+                            
+                            window.offerDocumentsCache = window.offerDocumentsCache || {};
+                            window.offerDocumentsCache[offerId] = data.documents || [];
 
-                        const actionButtonsHtml = isSellerView ? '' : `
-                            <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: stretch;">
-                                ${data.status === 'accepted' 
-                                    ? `<button class="btn btn-success" style="background-color: var(--success); color: white;" onclick="window.undoAcceptOffer('${offerId}')">✓ Offer Accepted (Undo)</button>` 
-                                    : `<button class="btn btn-outline" id="btn-accept-${offerId}" onclick="window.acceptOffer('${offerId}', 'offer-${offerId}-dates')">Accept Offer</button>`}
-                                <button class="btn btn-outline" onclick="window.viewDocuments('${offerId}')">View Documents</button>
-                            </div>
-                        `;
+                            const isSellerView = window.location.pathname.includes('seller_presentation.html');
 
-                        const card = document.createElement('div');
-                        card.className = 'card';
-                        card.style.borderLeft = `4px solid ${borderColor}`;
-                        const notesHtml = isSellerView ? `
-                            <div style="margin-top: 1.5rem; background: var(--background); padding: 1.5rem; border-radius: var(--radius-sm); border-left: 4px solid var(--primary);">
-                                <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Agent's Notes</h4>
-                                <p style="margin: 0; font-size: 0.95rem;">${data.sellerNotes || 'No specific notes provided for this offer yet.'}</p>
-                            </div>
-                        ` : `
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem;">
-                                <div class="form-group">
-                                    <label class="form-label" style="color: var(--danger);">Private Notes (For You Only)</label>
-                                    <textarea class="form-control" rows="3" placeholder="Add your private thoughts here...">${data.privateNotes || ''}</textarea>
+                            const actionButtonsHtml = isSellerView ? '' : `
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: stretch;">
+                                    ${data.status === 'accepted' 
+                                        ? `<button class="btn btn-success" style="background-color: var(--success); color: white;" onclick="window.undoAcceptOffer('${offerId}')">✓ Offer Accepted (Undo)</button>` 
+                                        : `<button class="btn btn-outline" id="btn-accept-${offerId}" onclick="window.acceptOffer('${offerId}', 'offer-${offerId}-dates')">Accept Offer</button>`}
+                                    <button class="btn btn-outline" onclick="window.viewDocuments('${offerId}')">View Documents</button>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label" style="color: var(--success);">Seller Notes (Visible to Seller)</label>
-                                    <textarea class="form-control" rows="3" placeholder="Notes to share with the seller...">${data.sellerNotes || ''}</textarea>
-                                </div>
-                            </div>
-                        `;
+                            `;
 
-                        card.innerHTML = `
-                            <div class="flex justify-between items-center mb-4 border-bottom pb-4" style="border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
-                                <div>
-                                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${data.price} ${highestBadge}</h3>
-                                    <p class="text-muted" style="margin-bottom: 0.5rem;">${data.financingType} Loan • ${data.downPaymentPercent}% Down • By: ${data.buyerAgentName} (${data.buyerAgentBrokerage || 'Independent'})</p>
-                                    ${data.buyerAgentCompPct ? `<p class="text-muted" style="margin-bottom: 0.5rem;"><strong>Buyer Agent Comp:</strong> ${data.buyerAgentCompPct}% ($${parseFloat(data.buyerAgentCompDollar).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</p>` : ''}
-                                    ${data.sellerCredit ? `<p class="text-muted" style="margin-bottom: 0.5rem;"><strong>Seller Credit:</strong> ${data.sellerCredit}</p>` : ''}
-                                    <div style="display: flex; gap: 0.5rem; font-size: 0.8rem; flex-wrap: wrap;" id="offer-${offerId}-dates">
-                                        <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);"><strong>Deposit:</strong> ${data.deposit}</span>
-                                        <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${data.coeDays}"><strong>COE:</strong> ${data.coeDays} Days</span>
-                                        <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${data.loanDays}"><strong>Loan:</strong> ${data.loanDays} Days</span>
-                                        <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${data.appraisalDays}"><strong>Appraisal:</strong> ${data.appraisalDays} Days</span>
-                                        <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${data.inspectionDays}"><strong>Inspection:</strong> ${data.inspectionDays} Days</span>
+                            const card = document.createElement('div');
+                            card.className = 'card';
+                            card.style.borderLeft = `4px solid ${borderColor}`;
+                            const notesHtml = isSellerView ? `
+                                <div style="margin-top: 1.5rem; background: var(--background); padding: 1.5rem; border-radius: var(--radius-sm); border-left: 4px solid var(--primary);">
+                                    <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Agent's Notes</h4>
+                                    <p style="margin: 0; font-size: 0.95rem;">${data.sellerNotes || 'No specific notes provided for this offer yet.'}</p>
+                                </div>
+                            ` : `
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem;">
+                                    <div class="form-group">
+                                        <label class="form-label" style="color: var(--danger);">Private Notes (For You Only)</label>
+                                        <textarea class="form-control" rows="3" placeholder="Add your private thoughts here...">${data.privateNotes || ''}</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" style="color: var(--success);">Seller Notes (Visible to Seller)</label>
+                                        <textarea class="form-control" rows="3" placeholder="Notes to share with the seller...">${data.sellerNotes || ''}</textarea>
                                     </div>
                                 </div>
-                                ${actionButtonsHtml}
-                            </div>
-                            
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Submitted: ${new Date(data.submittedAt.seconds * 1000).toLocaleString()}</p>
-                            </div>
-                            ${notesHtml}
-                        `;
-                        offersContainer.appendChild(card);
-                    });
-                    
-                    const isSellerView = window.location.pathname.includes('seller_presentation.html');
-                    if (!querySnapshot.empty && !isSellerView) {
-                        const btn = document.createElement('button');
-                        btn.className = 'btn btn-primary mt-4';
-                        btn.style.width = 'max-content';
-                        btn.innerText = 'Save All Notes';
-                        btn.onclick = () => alert('Notes saved locally!');
-                        offersContainer.appendChild(btn);
-                    }
+                            `;
 
-                }, (error) => {
-                    console.error("Error fetching offers:", error);
-                    offersContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius-md);"><p class="text-danger">Error loading offers.</p></div>';
-                });
-            }
-        }
+                            card.innerHTML = `
+                                <div class="flex justify-between items-center mb-4 border-bottom pb-4" style="border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                                    <div>
+                                        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${data.price} ${highestBadge}</h3>
+                                        <p class="text-muted" style="margin-bottom: 0.5rem;">${data.financingType} Loan • ${data.downPaymentPercent}% Down • By: ${data.buyerAgentName} (${data.buyerAgentBrokerage || 'Independent'})</p>
+                                        ${data.buyerAgentCompPct ? `<p class="text-muted" style="margin-bottom: 0.5rem;"><strong>Buyer Agent Comp:</strong> ${data.buyerAgentCompPct}% ($${parseFloat(data.buyerAgentCompDollar).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</p>` : ''}
+                                        ${currentListingCommission > 0 ? `<p class="text-muted" style="margin-bottom: 0.5rem;"><strong>Listing Agent Comp:</strong> ${currentListingCommission}% ($${listingAgentCompDollar.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</p>` : ''}
+                                        ${data.sellerCredit ? `<p class="text-muted" style="margin-bottom: 0.5rem;"><strong>Seller Credit:</strong> ${data.sellerCredit}</p>` : ''}
+                                        <p class="text-success" style="margin-bottom: 0.5rem; font-size: 1.1rem;"><strong>Buyer's Net (Proceeds):</strong> $${buyersNet.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                                        <div style="display: flex; gap: 0.5rem; font-size: 0.8rem; flex-wrap: wrap;" id="offer-${offerId}-dates">
+                                            <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);"><strong>Deposit:</strong> ${data.deposit}</span>
+                                            <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${data.coeDays}"><strong>COE:</strong> ${data.coeDays} Days</span>
+                                            <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${data.loanDays}"><strong>Loan:</strong> ${data.loanDays} Days</span>
+                                            <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${data.appraisalDays}"><strong>Appraisal:</strong> ${data.appraisalDays} Days</span>
+                                            <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${data.inspectionDays}"><strong>Inspection:</strong> ${data.inspectionDays} Days</span>
+                                        </div>
+                                    </div>
+                                    ${actionButtonsHtml}
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Submitted: ${new Date(data.submittedAt.seconds * 1000).toLocaleString()}</p>
+                                </div>
+                                ${notesHtml}
+                            `;
+                            offersContainer.appendChild(card);
+                        });
+                        
+                        const isSellerView = window.location.pathname.includes('seller_presentation.html');
+                        if (!querySnapshot.empty && !isSellerView) {
+                            const btn = document.createElement('button');
+                            btn.className = 'btn btn-primary mt-4';
+                            btn.style.width = 'max-content';
+                            btn.innerText = 'Save All Notes';
+                            btn.onclick = () => alert('Notes saved locally!');
+                            offersContainer.appendChild(btn);
+                        }
+
+                    }, (error) => {
+                        console.error("Error fetching offers:", error);
+                        offersContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius-md);"><p class="text-danger">Error loading offers.</p></div>';
+                    });
+                }
+            }).catch(err => console.error("Error fetching property:", err));
     }
 
 
