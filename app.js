@@ -50,8 +50,8 @@ const initializeAppLogic = () => {
         if (user) {
             // User is signed in.
             console.log("User is signed in:", user.email);
-            // If they are on the login/register page, redirect to dashboard
-            if (isAuthPage) {
+            // If they are on the login/register page AND not actively registering, redirect to dashboard
+            if (isAuthPage && !window.isRegistering) {
                 window.location.href = 'index.html';
             }
             
@@ -493,6 +493,8 @@ const initializeAppLogic = () => {
             }
 
             try {
+                window.isRegistering = true; // Prevent premature redirect from auth observer
+                
                 // Create user in Firebase Auth
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
@@ -512,7 +514,7 @@ const initializeAppLogic = () => {
                 });
 
                 alert("Account created successfully!");
-                // onAuthStateChanged will automatically redirect to index.html
+                window.location.href = 'index.html'; // Safe to redirect now
                 
             } catch (error) {
                 console.error("Registration Error:", error);
