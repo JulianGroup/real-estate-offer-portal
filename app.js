@@ -1061,6 +1061,7 @@ const initializeAppLogic = () => {
                     });
                 }
             }).catch(err => console.error("Error fetching property:", err));
+        }
     }
 
 
