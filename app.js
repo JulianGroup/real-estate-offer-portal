@@ -940,6 +940,17 @@ const initializeAppLogic = () => {
                     const priceHeader = document.getElementById('public-prop-price');
                     if (priceHeader) priceHeader.innerText = `Asking: ${propData.askingPrice || 'TBD'}`;
                     
+                    const setFallbackAgent = () => {
+                        const nameEl = document.getElementById('public-agent-name');
+                        if (nameEl) nameEl.innerText = 'Listing Agent';
+                        const brokerEl = document.getElementById('public-agent-brokerage');
+                        if (brokerEl) brokerEl.innerText = 'Independent Agent';
+                        const emailEl = document.getElementById('public-agent-email');
+                        if (emailEl) emailEl.innerText = 'No email provided';
+                        const mobileEl = document.getElementById('public-agent-mobile');
+                        if (mobileEl) mobileEl.innerText = '';
+                    };
+
                     if (propData.agentId) {
                         try {
                             const agentSnap = await getDoc(doc(db, "users", propData.agentId));
@@ -963,10 +974,15 @@ const initializeAppLogic = () => {
                                 
                                 const mobileEl = document.getElementById('public-agent-mobile');
                                 if (mobileEl) mobileEl.innerText = formatPhone(agent.mobile) || '';
+                            } else {
+                                setFallbackAgent();
                             }
                         } catch (e) {
                             console.error("Error fetching agent:", e);
+                            setFallbackAgent();
                         }
+                    } else {
+                        setFallbackAgent();
                     }
                 }
             }).catch(err => console.error("Error fetching property:", err));
