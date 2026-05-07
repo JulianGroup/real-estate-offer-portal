@@ -742,8 +742,27 @@ const initializeAppLogic = () => {
                     finalImageUrl = placeholderImages[Math.floor(Math.random() * placeholderImages.length)];
                 }
 
+                let agentFullName = "Listing Agent";
+                let agentEmail = user.email;
+                let agentMobile = "";
+                let agentBrokerage = "Independent Agent";
+                
+                try {
+                    const agentSnap = await getDoc(doc(db, "users", user.uid));
+                    if (agentSnap.exists()) {
+                        const data = agentSnap.data();
+                        agentFullName = data.fullName || data.name || "Listing Agent";
+                        agentMobile = data.mobile || "";
+                        agentBrokerage = data.brokerage || "Independent Agent";
+                    }
+                } catch(e) { console.error("Could not fetch agent profile for property:", e); }
+
                 await addDoc(collection(db, "properties"), {
                     agentId: user.uid,
+                    agentName: agentFullName,
+                    agentEmail: agentEmail,
+                    agentMobile: agentMobile,
+                    agentBrokerage: agentBrokerage,
                     address: address,
                     askingPrice: price,
                     description: desc,
@@ -940,49 +959,43 @@ const initializeAppLogic = () => {
                     const priceHeader = document.getElementById('public-prop-price');
                     if (priceHeader) priceHeader.innerText = `Asking: ${propData.askingPrice || 'TBD'}`;
                     
-                    const setFallbackAgent = () => {
+                    const formatPhone = (str) => {
+                        if (!str) return '';
+                        const cleaned = ('' + str).replace(/\D/g, '');
+                        const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+                        return match ? `(${match[1]}) ${match[2]}-${match[3]}` : str;
+                    };
+                    
+                    const setAgentUI = (name, broker, email, mobile) => {
                         const nameEl = document.getElementById('public-agent-name');
-                        if (nameEl) nameEl.innerText = 'Listing Agent';
+                        if (nameEl) nameEl.innerText = name || 'Listing Agent';
                         const brokerEl = document.getElementById('public-agent-brokerage');
-                        if (brokerEl) brokerEl.innerText = 'Independent Agent';
+                        if (brokerEl) brokerEl.innerText = broker || 'Independent Agent';
                         const emailEl = document.getElementById('public-agent-email');
-                        if (emailEl) emailEl.innerText = 'No email provided';
+                        if (emailEl) emailEl.innerText = email || 'No email provided';
                         const mobileEl = document.getElementById('public-agent-mobile');
-                        if (mobileEl) mobileEl.innerText = '';
+                        if (mobileEl) mobileEl.innerText = formatPhone(mobile) || '';
                     };
 
-                    if (propData.agentId) {
+                    // Prefer denormalized data to avoid Firestore permission errors for public users
+                    if (propData.agentName || propData.agentEmail) {
+                        setAgentUI(propData.agentName, propData.agentBrokerage, propData.agentEmail, propData.agentMobile);
+                    } else if (propData.agentId) {
+                        // Fallback to fetching from users collection (might fail if rules deny it)
                         try {
                             const agentSnap = await getDoc(doc(db, "users", propData.agentId));
                             if (agentSnap.exists()) {
                                 const agent = agentSnap.data();
-                                const formatPhone = (str) => {
-                                    if (!str) return '';
-                                    const cleaned = ('' + str).replace(/\D/g, '');
-                                    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
-                                    return match ? `(${match[1]}) ${match[2]}-${match[3]}` : str;
-                                };
-                                
-                                const nameEl = document.getElementById('public-agent-name');
-                                if (nameEl) nameEl.innerText = agent.fullName || 'Listing Agent';
-                                
-                                const brokerEl = document.getElementById('public-agent-brokerage');
-                                if (brokerEl) brokerEl.innerText = agent.brokerage || 'Independent Agent';
-                                
-                                const emailEl = document.getElementById('public-agent-email');
-                                if (emailEl) emailEl.innerText = agent.email || '';
-                                
-                                const mobileEl = document.getElementById('public-agent-mobile');
-                                if (mobileEl) mobileEl.innerText = formatPhone(agent.mobile) || '';
+                                setAgentUI(agent.fullName, agent.brokerage, agent.email, agent.mobile);
                             } else {
-                                setFallbackAgent();
+                                setAgentUI('Listing Agent', 'Independent Agent', 'No email provided', '');
                             }
                         } catch (e) {
                             console.error("Error fetching agent:", e);
-                            setFallbackAgent();
+                            setAgentUI('Listing Agent', 'Independent Agent', 'No email provided', '');
                         }
                     } else {
-                        setFallbackAgent();
+                        setAgentUI('Listing Agent', 'Independent Agent', 'No email provided', '');
                     }
                 }
             }).catch(err => console.error("Error fetching property:", err));
