@@ -838,7 +838,15 @@ const initializeAppLogic = () => {
                         const brokerEl = document.getElementById('public-agent-brokerage');
                         if (brokerEl) brokerEl.innerText = broker || 'Independent Agent';
                         const emailEl = document.getElementById('public-agent-email');
-                        if (emailEl) emailEl.innerText = email || 'No email provided';
+                        if (emailEl) {
+                            if (email) {
+                                const propAddress = propData.address || 'Property';
+                                const subject = encodeURIComponent(`Offer on ${propAddress}`);
+                                emailEl.innerHTML = `<a href="mailto:${email}?subject=${subject}" style="color: inherit; text-decoration: underline;">${email}</a>`;
+                            } else {
+                                emailEl.innerText = 'No email provided';
+                            }
+                        }
                         const mobileEl = document.getElementById('public-agent-mobile');
                         if (mobileEl) mobileEl.innerText = formatPhone(mobile) || '';
                     };
