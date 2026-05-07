@@ -898,8 +898,9 @@ const initializeAppLogic = () => {
 
             // Fetch property details for header
             getDoc(doc(db, "properties", propertyId)).then(async (docSnap) => {
+                let propData = {};
                 if (docSnap.exists()) {
-                    const propData = docSnap.data();
+                    propData = docSnap.data();
                     const header = document.getElementById('prop-address-header');
                     if (header) header.innerText = propData.address;
                     
