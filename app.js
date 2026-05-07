@@ -250,9 +250,12 @@ const initializeAppLogic = () => {
                                 </div>
                                 <h3 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${data.address}">${data.address}</h3>
                                 <p class="text-muted mb-4">${data.askingPrice} • <span id="offer-count-${id}">Loading Offers...</span></p>
-                                <div class="flex justify-between mt-4">
-                                    <a href="offer_management.html?id=${id}" class="btn btn-primary" style="width: 48%; text-align: center;">View Offers</a>
-                                    <a href="offer_submission.html?id=${id}" class="btn btn-outline" style="width: 48%; text-align: center;">Portal Link</a>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
+                                    <a href="offer_management.html?id=${id}" class="btn btn-primary" style="width: 100%; text-align: center;">View Offers</a>
+                                    <div class="flex justify-between">
+                                        <a href="offer_submission.html?id=${id}" class="btn btn-outline" style="width: 48%; text-align: center; padding: 0.5rem; font-size: 0.85rem;" target="_blank">Open Portal</a>
+                                        <button class="btn btn-outline copy-portal-btn" data-id="${id}" style="width: 48%; text-align: center; padding: 0.5rem; font-size: 0.85rem;">Copy Link</button>
+                                    </div>
                                 </div>
                             `;
                             listingsContainer.appendChild(card);
@@ -264,6 +267,25 @@ const initializeAppLogic = () => {
                                     e.preventDefault();
                                     const propId = deleteBtn.getAttribute('data-id');
                                     if (window.deleteProperty) window.deleteProperty(propId);
+                                });
+                            }
+
+                            // Attach copy listener safely
+                            const copyBtn = card.querySelector('.copy-portal-btn');
+                            if (copyBtn) {
+                                copyBtn.addEventListener('click', () => {
+                                    const propId = copyBtn.getAttribute('data-id');
+                                    let baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+                                    if (!baseUrl.endsWith('/')) baseUrl += '/';
+                                    const url = baseUrl + `offer_submission.html?id=${propId}`;
+                                    navigator.clipboard.writeText(url).then(() => {
+                                        const originalText = copyBtn.innerText;
+                                        copyBtn.innerText = 'Copied!';
+                                        setTimeout(() => copyBtn.innerText = originalText, 2000);
+                                    }).catch(err => {
+                                        console.error('Copy failed', err);
+                                        alert('Could not copy automatically. Link: ' + url);
+                                    });
                                 });
                             }
                             
