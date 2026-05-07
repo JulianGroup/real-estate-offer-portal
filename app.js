@@ -925,6 +925,55 @@ const initializeAppLogic = () => {
     if (publicOfferForm) publicOfferForm.addEventListener('submit', (e) => handleOfferSubmit(e, false));
 
 
+    // --- PUBLIC PAGE LOGIC (Runs regardless of Auth State) ---
+    if (path.includes('offer_submission')) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const propertyId = urlParams.get('id');
+        if (propertyId) {
+            getDoc(doc(db, "properties", propertyId)).then(async (docSnap) => {
+                if (docSnap.exists()) {
+                    const propData = docSnap.data();
+                    
+                    const addressHeader = document.getElementById('public-prop-address');
+                    if (addressHeader) addressHeader.innerText = propData.address || 'Property Details';
+                    
+                    const priceHeader = document.getElementById('public-prop-price');
+                    if (priceHeader) priceHeader.innerText = `Asking: ${propData.askingPrice || 'TBD'}`;
+                    
+                    if (propData.agentId) {
+                        try {
+                            const agentSnap = await getDoc(doc(db, "users", propData.agentId));
+                            if (agentSnap.exists()) {
+                                const agent = agentSnap.data();
+                                const formatPhone = (str) => {
+                                    if (!str) return '';
+                                    const cleaned = ('' + str).replace(/\D/g, '');
+                                    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+                                    return match ? `(${match[1]}) ${match[2]}-${match[3]}` : str;
+                                };
+                                
+                                const nameEl = document.getElementById('public-agent-name');
+                                if (nameEl) nameEl.innerText = agent.fullName || 'Listing Agent';
+                                
+                                const brokerEl = document.getElementById('public-agent-brokerage');
+                                if (brokerEl) brokerEl.innerText = agent.brokerage || 'Independent Agent';
+                                
+                                const emailEl = document.getElementById('public-agent-email');
+                                if (emailEl) emailEl.innerText = agent.email || '';
+                                
+                                const mobileEl = document.getElementById('public-agent-mobile');
+                                if (mobileEl) mobileEl.innerText = formatPhone(agent.mobile) || '';
+                            }
+                        } catch (e) {
+                            console.error("Error fetching agent:", e);
+                        }
+                    }
+                }
+            }).catch(err => console.error("Error fetching property:", err));
+        }
+    }
+
+
     // --- UI FORMATTING & PROTOTYPE LOGIC ---
 
     // Function to format number to US currency without cents
