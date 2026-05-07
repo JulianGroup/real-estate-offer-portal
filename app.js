@@ -244,7 +244,7 @@ const initializeAppLogic = () => {
                             card.innerHTML = `
                                 <div style="height: 160px; background-color: #E2E8F0; border-radius: var(--radius-md); margin-bottom: 1rem; background-image: url('${data.imageUrl || 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=400&q=80'}'); background-size: cover; background-position: center; position: relative;">
                                     <div style="position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.5rem;">
-                                        <button onclick="window.deleteProperty('${id}')" class="btn btn-outline" style="background: white; padding: 0.25rem 0.5rem; font-size: 0.8rem; border: 1px solid var(--danger); color: var(--danger); box-shadow: var(--shadow-sm);">🗑️ Delete</button>
+                                        <button class="btn btn-outline delete-prop-btn" data-id="${id}" style="background: white; padding: 0.25rem 0.5rem; font-size: 0.8rem; border: 1px solid var(--danger); color: var(--danger); box-shadow: var(--shadow-sm);">🗑️ Delete</button>
                                         <a href="edit_property.html?id=${id}" class="btn btn-outline" style="background: white; padding: 0.25rem 0.5rem; font-size: 0.8rem; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">✏️ Edit</a>
                                     </div>
                                 </div>
@@ -256,6 +256,16 @@ const initializeAppLogic = () => {
                                 </div>
                             `;
                             listingsContainer.appendChild(card);
+                            
+                            // Attach delete listener safely
+                            const deleteBtn = card.querySelector('.delete-prop-btn');
+                            if (deleteBtn) {
+                                deleteBtn.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    const propId = deleteBtn.getAttribute('data-id');
+                                    if (window.deleteProperty) window.deleteProperty(propId);
+                                });
+                            }
                             
                             // Fetch real offer count
                             getDocs(query(collection(db, "offers"), where("propertyId", "==", id))).then(snap => {
