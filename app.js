@@ -943,6 +943,35 @@ const initializeAppLogic = () => {
             if (val) input.value = "$" + parseInt(val, 10).toLocaleString('en-US');
         }
     });
+
+    // Function to format phone numbers as (XXX) XXX-XXXX
+    const formatPhoneInput = (e) => {
+        let input = e.target;
+        let value = input.value.replace(/\D/g, "");
+        if (value.length > 10) value = value.substring(0, 10); // Limit to 10 digits
+        
+        let formattedValue = "";
+        if (value.length > 0) {
+            formattedValue = "(" + value.substring(0, 3);
+            if (value.length > 3) {
+                formattedValue += ") " + value.substring(3, 6);
+            }
+            if (value.length > 6) {
+                formattedValue += "-" + value.substring(6, 10);
+            }
+        }
+        input.value = formattedValue;
+    };
+
+    // Attach listener to all inputs with the 'phone-input' class
+    const phoneInputs = document.querySelectorAll('.phone-input');
+    phoneInputs.forEach(input => {
+        input.addEventListener('input', formatPhoneInput);
+        // Format initial value if present
+        if (input.value) {
+            formatPhoneInput({ target: input });
+        }
+    });
 };
 
 if (document.readyState === 'loading') {
