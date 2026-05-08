@@ -203,6 +203,69 @@ const initializeAppLogic = () => {
                         window.renderTeam([]);
                     }
                 }).catch(err => console.error("Error fetching profile:", err));
+
+                window.removeTeamMember = async (index) => {
+                    if (!confirm("Are you sure you want to remove this team member?")) return;
+                    try {
+                        const docRef = doc(db, "users", user.uid);
+                        const docSnap = await getDoc(docRef);
+                        if (docSnap.exists() && docSnap.data().team) {
+                            let team = docSnap.data().team;
+                            team.splice(index, 1);
+                            await setDoc(docRef, { team: team }, { merge: true });
+                            await window.refreshTeam();
+                        }
+                    } catch (error) {
+                        console.error("Error removing team member:", error);
+                        alert("Error: " + error.message);
+                    }
+                };
+
+                const inviteForm = document.getElementById('team-invite-form');
+                if (inviteForm) {
+                    inviteForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const btn = document.getElementById('btn-send-invite');
+                        const originalText = btn.innerText;
+                        btn.innerText = 'Sending...';
+                        btn.disabled = true;
+
+                        try {
+                            const email = document.getElementById('invite-email').value;
+                            const role = document.getElementById('invite-role').value;
+
+                            const docRef = doc(db, "users", user.uid);
+                            const docSnap = await getDoc(docRef);
+                            let team = [];
+                            if (docSnap.exists() && docSnap.data().team) {
+                                team = docSnap.data().team;
+                            }
+                            
+                            if (team.find(m => m.email.toLowerCase() === email.toLowerCase())) {
+                                alert("This person is already on your team.");
+                                btn.innerText = originalText;
+                                btn.disabled = false;
+                                return;
+                            }
+
+                            team.push({ email, role, addedAt: new Date().toISOString() });
+                            await setDoc(docRef, { team: team }, { merge: true });
+                            
+                            inviteForm.reset();
+                            await window.refreshTeam();
+                            btn.innerText = 'Sent!';
+                            setTimeout(() => {
+                                btn.innerText = originalText;
+                                btn.disabled = false;
+                            }, 2000);
+                        } catch (error) {
+                            console.error("Error inviting team member:", error);
+                            alert("Error: " + error.message);
+                            btn.innerText = originalText;
+                            btn.disabled = false;
+                        }
+                    });
+                }
             }
 
             // Load Edit Property if on edit page
