@@ -1418,48 +1418,153 @@ window.viewDocuments = (offerId) => {
     alert(`Attached Documents for Review:\n\n${docList}\n\n[Prototype Note: In a production environment, clicking this would open these PDFs directly from Firebase Storage.]`);
 };
 
-window.simulateAIAutoFill = () => {
-    const btn = document.getElementById('btn-ai-autofill');
-    if (!btn) return;
+window.executeAIExtraction = async () => {
+    const btn = document.getElementById('btn-ai-extract');
+    const fileInput = document.getElementById('ai-file-rpa');
+    
+    if (!btn || !fileInput || !fileInput.files[0]) return;
+    
+    if (!window.GEMINI_API_KEY) {
+        alert("API Key missing! Please ensure api_keys.js is loaded and contains your key.");
+        return;
+    }
 
+    const file = fileInput.files[0];
     const originalText = btn.innerHTML;
-    btn.innerHTML = '✨ Analyzing PDF... <span style="font-size: 0.8rem; margin-left: 0.5rem; opacity: 0.8;">(Simulated)</span>';
+    btn.innerHTML = '✨ Extracting text...';
     btn.disabled = true;
-    btn.style.opacity = '0.8';
+    
+    try {
+        // 1. Read PDF with pdf.js
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = "";
+        
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(" ");
+            fullText += `\n--- PAGE ${i} ---\n` + pageText;
+        }
+        
+        btn.innerHTML = '✨ Analyzing with AI...';
 
-    setTimeout(() => {
-        const mockData = {
-            'ai-price': '925000',
-            'ai-deposit': '27750',
-            'ai-down': '20',
-            'ai-finance': 'Conventional',
-            'ai-coe': '30',
-            'ai-loan': '21',
-            'ai-appraisal': '17',
-            'ai-inspection': '10'
+        // 2. Call Gemini API
+        const prompt = `
+You are a highly accurate real estate contract parsing assistant.
+I will provide the raw text of a Purchase Agreement. 
+Extract the following information and return ONLY a valid JSON object matching this exact structure:
+{
+  "buyerBrokerage": "string or null",
+  "buyerBrokerageDre": "string or null",
+  "buyerAgent": "string or null",
+  "buyerAgentDre": "string or null",
+  "buyerAgentEmail": "string or null",
+  "buyerAgentPhone": "string or null",
+  "purchasePrice": "number (no commas or symbols) or null",
+  "initialDeposit": "number (no commas or symbols) or null",
+  "loanAmount": "number (no commas or symbols) or null",
+  "coeDays": "number (days) or null",
+  "sellerCredit": "number (no commas or symbols) or null",
+  "loanContingency": "number (days) or null",
+  "appraisalContingency": "number (days) or null",
+  "inspectionContingency": "number (days) or null",
+  "insuranceContingency": "number (days) or null",
+  "sellerDocContingency": "number (days) or null",
+  "commonInterestContingency": "number (days) or null",
+  "leasedLienContingency": "number (days) or null"
+}
+If a value is not found or is blank, return null. For Days, return an integer.
+Raw text:
+${fullText}
+`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${window.GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { response_mime_type: "application/json" }
+            })
+        });
+
+        if (!response.ok) {
+            const errBody = await response.text();
+            throw new Error(`Gemini API Error: ${response.status} ${errBody}`);
+        }
+
+        const jsonResp = await response.json();
+        let extractedJsonStr = jsonResp.candidates[0].content.parts[0].text;
+        
+        // Clean markdown block if present
+        if (extractedJsonStr.startsWith('\`\`\`json')) {
+            extractedJsonStr = extractedJsonStr.replace(/^\`\`\`json/, '').replace(/\`\`\`$/, '');
+        }
+        
+        const extracted = JSON.parse(extractedJsonStr);
+
+        // 3. Map to HTML elements
+        const mappings = {
+            'agent-brokerage': extracted.buyerBrokerage,
+            'agent-name': extracted.buyerAgent,
+            'agent-email': extracted.buyerAgentEmail,
+            'ai-price': extracted.purchasePrice,
+            'ai-deposit': extracted.initialDeposit,
+            'ai-coe': extracted.coeDays,
+            'ai-loan': extracted.loanContingency,
+            'ai-appraisal': extracted.appraisalContingency,
+            'ai-inspection': extracted.inspectionContingency,
+            'ai-seller-credit': extracted.sellerCredit
         };
 
-        for (const [id, value] of Object.entries(mockData)) {
+        for (const [id, value] of Object.entries(mappings)) {
             const el = document.getElementById(id);
-            if (el) {
+            if (el && value !== null && value !== undefined && value !== "") {
                 el.value = value;
                 el.dispatchEvent(new Event('input', { bubbles: true }));
                 el.style.transition = 'background-color 0.5s ease';
-                el.style.backgroundColor = 'rgba(124, 58, 237, 0.1)';
-                setTimeout(() => { el.style.backgroundColor = ''; }, 3000);
+                el.style.backgroundColor = 'rgba(56, 161, 105, 0.15)'; // light success green
+                setTimeout(() => { el.style.backgroundColor = ''; }, 4000);
+            }
+        }
+        
+        // Calculate down payment percentage if not explicitly provided but we have price and loan
+        if (extracted.purchasePrice && extracted.loanAmount) {
+            const price = parseFloat(extracted.purchasePrice);
+            const loan = parseFloat(extracted.loanAmount);
+            if (!isNaN(price) && !isNaN(loan) && price > 0) {
+                const downPct = (((price - loan) / price) * 100).toFixed(2);
+                const downEl = document.getElementById('ai-down');
+                if (downEl) {
+                    downEl.value = downPct;
+                    downEl.dispatchEvent(new Event('input', { bubbles: true }));
+                    downEl.style.transition = 'background-color 0.5s ease';
+                    downEl.style.backgroundColor = 'rgba(56, 161, 105, 0.15)';
+                    setTimeout(() => { downEl.style.backgroundColor = ''; }, 4000);
+                }
             }
         }
 
-        btn.innerHTML = '✅ AI Extraction Complete';
+        btn.innerHTML = '✅ Auto-Filled Successfully';
         btn.style.background = 'var(--success)';
-        btn.style.boxShadow = 'none';
-        alert("✨ AI successfully extracted the offer details from the Purchase Agreement.\n\nPlease review the highlighted fields for accuracy before submitting.");
+        btn.style.color = 'white';
+        btn.style.borderColor = 'var(--success)';
 
         setTimeout(() => {
             btn.innerHTML = originalText;
             btn.disabled = false;
             btn.style.background = '';
-            btn.style.boxShadow = '';
+            btn.style.color = '';
+            btn.style.borderColor = '';
         }, 5000);
-    }, 2500); 
+
+    } catch (err) {
+        console.error("AI Extraction Error:", err);
+        alert("Failed to extract data: " + err.message);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
 };
+
+const extractBtn = document.getElementById('btn-ai-extract');
+if (extractBtn) extractBtn.addEventListener('click', window.executeAIExtraction);

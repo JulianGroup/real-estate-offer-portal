@@ -127,10 +127,16 @@
                 <p class="text-muted mb-4">Upload the PDFs received from the buyer's agent.</p>
 
                 <div class="form-group">
-                    <label class="form-label">Purchase Agreement (RPA)</label>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem;">
+                        <label class="form-label" style="margin-bottom: 0;">Purchase Agreement (RPA)</label>
+                        <button type="button" id="btn-ai-extract" class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; border-color: var(--secondary); color: var(--secondary); display: none;">✨ Auto-Fill from Contract</button>
+                    </div>
                     <label for="ai-file-rpa" class="file-upload-area" style="cursor: pointer; display: block; text-align: center; padding: 1rem;">
                         <p id="ai-file-rpa-text" style="margin: 0;">📄 Click to upload Signed Purchase Offer (.pdf)</p>
-                        <input type="file" id="ai-file-rpa" accept=".pdf" multiple style="display: none;" onchange="document.getElementById('ai-file-rpa-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Click to upload Signed Purchase Offer (.pdf)')">
+                        <input type="file" id="ai-file-rpa" accept=".pdf" multiple style="display: none;" onchange="
+                            document.getElementById('ai-file-rpa-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Click to upload Signed Purchase Offer (.pdf)');
+                            if(this.files[0]) { document.getElementById('btn-ai-extract').style.display = 'inline-block'; } else { document.getElementById('btn-ai-extract').style.display = 'none'; }
+                        ">
                     </label>
                 </div>
 
@@ -150,6 +156,9 @@
         </div>
 
     </main>
-    <script type="module" src="app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    <script src="api_keys.js"></script>
+    <script type="module" src="app.js?v=12"></script>
 </body>
 </html>
