@@ -27,13 +27,23 @@
             <p class="text-muted" style="max-width: 600px; margin: 0 auto;">Review the details of all offers received for your property. Your agent will walk you through the strengths and considerations of each one.</p>
         </div>
 
-        <h3 class="mb-4" id="offers-count-header" style="font-size: 1.25rem; text-align: center;">Received Offers (0)</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;" class="mb-4">
+            <h3 id="offers-count-header" style="font-size: 1.25rem; margin: 0;">Received Offers (0)</h3>
+            <div class="view-toggle" style="margin-bottom: 0;">
+                <button class="view-toggle-btn active" id="btn-card-view">Card View</button>
+                <button class="view-toggle-btn" id="btn-grid-view">Grid View</button>
+            </div>
+        </div>
         
         <div id="offers-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
             <!-- Offers will be dynamically injected here -->
             <div style="text-align: center; padding: 3rem; background: white; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
                 <p class="text-muted">Loading offers...</p>
             </div>
+        </div>
+
+        <div id="offers-grid-container" class="table-responsive" style="display: none; margin-top: 0; background: white;">
+            <!-- Grid table will be dynamically injected here -->
         </div>
 
         <div style="margin-top: 3rem; text-align: center; padding-top: 2rem; border-top: 1px solid var(--border);">

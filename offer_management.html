@@ -31,13 +31,23 @@
 
     <main class="container" style="padding-bottom: 4rem;">
         
-        <h2 class="mb-4" id="offers-count-header">Received Offers (0)</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;" class="mb-4">
+            <h2 id="offers-count-header" style="margin: 0;">Received Offers (0)</h2>
+            <div class="view-toggle" style="margin-bottom: 0;">
+                <button class="view-toggle-btn active" id="btn-card-view">Card View</button>
+                <button class="view-toggle-btn" id="btn-grid-view">Grid View</button>
+            </div>
+        </div>
         
         <div id="offers-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
             <!-- Offers will be dynamically injected here -->
             <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius-md);">
                 <p class="text-muted">Loading offers...</p>
             </div>
+        </div>
+
+        <div id="offers-grid-container" class="table-responsive" style="display: none; margin-top: 0;">
+            <!-- Grid table will be dynamically injected here -->
         </div>
     </main>
     <script type="module" src="app.js?v=2"></script>

@@ -983,6 +983,7 @@ const initializeAppLogic = () => {
                             if (p > highestPrice) highestPrice = p;
                         });
 
+                        let processedOffers = [];
                         querySnapshot.forEach((docSnap) => {
                             const data = docSnap.data();
                             const offerId = docSnap.id;
@@ -1000,10 +1001,25 @@ const initializeAppLogic = () => {
                             
                             let buyersNet = priceVal - buyerAgentCompDollar - listingAgentCompDollar - sellerCreditVal;
 
+                            processedOffers.push({
+                                id: offerId,
+                                data: data,
+                                priceVal: priceVal,
+                                isHighest: isHighest,
+                                listingAgentCompDollar: listingAgentCompDollar,
+                                buyerAgentCompDollar: buyerAgentCompDollar,
+                                sellerCreditVal: sellerCreditVal,
+                                buyersNet: buyersNet
+                            });
+                        });
+
+                        // BUILD CARD VIEW
+                        processedOffers.forEach((offer) => {
+                            const { data, id: offerId, isHighest, listingAgentCompDollar, buyerAgentCompDollar, buyersNet } = offer;
+                            
                             const borderColor = isHighest ? 'var(--success)' : 'var(--border)';
                             const highestBadge = isHighest ? `<span class="badge" style="background-color: rgba(56, 161, 105, 0.1); color: var(--success); margin-left: 0.5rem;">Highest Offer</span>` : '';
 
-                            
                             window.offerDocumentsCache = window.offerDocumentsCache || {};
                             window.offerDocumentsCache[offerId] = data.documents || [];
 
@@ -1039,6 +1055,8 @@ const initializeAppLogic = () => {
                                 </div>
                             `;
 
+                            const currentListingCommission = parseFloat(propData.listingCommission) || 0;
+
                             card.innerHTML = `
                                 <div class="flex justify-between items-center mb-4 border-bottom pb-4" style="border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
                                     <div>
@@ -1066,6 +1084,64 @@ const initializeAppLogic = () => {
                             `;
                             offersContainer.appendChild(card);
                         });
+
+                        // BUILD GRID VIEW
+                        const gridContainer = document.getElementById('offers-grid-container');
+                        if (gridContainer) {
+                            let tableHtml = `<table class="comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data Point</th>
+                                        ${processedOffers.map((o, i) => `<th style="${o.isHighest ? 'background-color: rgba(56, 161, 105, 0.1); color: var(--success);' : ''}">Offer ${i + 1} ${o.isHighest ? '(Highest)' : ''}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                            `;
+                            
+                            const currentListingCommission = parseFloat(propData.listingCommission) || 0;
+                            const rows = [
+                                { label: 'Offer Price', key: o => o.data.price },
+                                { label: 'Buyer\'s Net Proceeds', key: o => `$${o.buyersNet.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` },
+                                { label: 'Buyer Agent Comp', key: o => o.data.buyerAgentCompPct ? `${o.data.buyerAgentCompPct}% ($${o.buyerAgentCompDollar.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})` : '-' },
+                                { label: 'Listing Agent Comp', key: o => currentListingCommission > 0 ? `${currentListingCommission}% ($${o.listingAgentCompDollar.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})` : '-' },
+                                { label: 'Seller Credit', key: o => o.data.sellerCredit || '-' },
+                                { label: 'Financing Type', key: o => `${o.data.financingType} Loan` },
+                                { label: 'Down Payment', key: o => `${o.data.downPaymentPercent}%` },
+                                { label: 'Deposit', key: o => o.data.deposit || '-' },
+                                { label: 'COE (Days)', key: o => o.data.coeDays || '-' },
+                                { label: 'Loan Contingency', key: o => o.data.loanDays || '-' },
+                                { label: 'Appraisal Contingency', key: o => o.data.appraisalDays || '-' },
+                                { label: 'Inspection Contingency', key: o => o.data.inspectionDays || '-' }
+                            ];
+                            
+                            rows.forEach(r => {
+                                tableHtml += `<tr>
+                                    <th>${r.label}</th>
+                                    ${processedOffers.map(o => `<td>${r.key(o)}</td>`).join('')}
+                                </tr>`;
+                            });
+                            
+                            tableHtml += `</tbody></table>`;
+                            gridContainer.innerHTML = tableHtml;
+
+                            // TOGGLE VIEW LOGIC
+                            const btnCardView = document.getElementById('btn-card-view');
+                            const btnGridView = document.getElementById('btn-grid-view');
+                            if (btnCardView && btnGridView) {
+                                btnCardView.onclick = () => {
+                                    btnCardView.classList.add('active');
+                                    btnGridView.classList.remove('active');
+                                    offersContainer.style.display = 'flex';
+                                    gridContainer.style.display = 'none';
+                                };
+                                btnGridView.onclick = () => {
+                                    btnGridView.classList.add('active');
+                                    btnCardView.classList.remove('active');
+                                    gridContainer.style.display = 'block';
+                                    offersContainer.style.display = 'none';
+                                };
+                            }
+                        }
                         
                         const isSellerView = window.location.pathname.includes('seller_presentation.html');
                         if (!querySnapshot.empty && !isSellerView) {
