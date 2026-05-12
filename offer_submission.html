@@ -84,12 +84,13 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Financing Type</label>
-                        <select id="ai-finance" class="form-control">
-                            <option>Conventional</option>
-                            <option>FHA</option>
-                            <option>VA</option>
-                            <option>Cash</option>
-                            <option>Other</option>
+                        <select id="ai-finance" class="form-control" required>
+                            <option value="" selected disabled>Select Financing...</option>
+                            <option value="Conventional">Conventional</option>
+                            <option value="FHA">FHA</option>
+                            <option value="VA">VA</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div>
                 </div>

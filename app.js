@@ -1,7 +1,8 @@
 import { 
     auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
     onAuthStateChanged, signOut, updateProfile, doc, setDoc, getDoc,
-    collection, addDoc, query, where, onSnapshot, getDocs, sendPasswordResetEmail, deleteDoc
+    collection, addDoc, query, where, onSnapshot, getDocs, sendPasswordResetEmail, deleteDoc,
+    functions, httpsCallable
 } from './firebase-config.js';
 
 // Helper to compress image to Base64
@@ -1424,11 +1425,6 @@ window.executeAIExtraction = async () => {
     
     if (!btn || !fileInput || !fileInput.files[0]) return;
     
-    if (!window.GEMINI_API_KEY) {
-        alert("API Key missing! Please ensure api_keys.js is loaded and contains your key.");
-        return;
-    }
-
     const file = fileInput.files[0];
     const originalText = btn.innerHTML;
     btn.innerHTML = '✨ Extracting text...';
@@ -1447,61 +1443,18 @@ window.executeAIExtraction = async () => {
             fullText += `\n--- PAGE ${i} ---\n` + pageText;
         }
         
-        btn.innerHTML = '✨ Analyzing with AI...';
+        btn.innerHTML = '✨ Analyzing securely on server...';
 
-        // 2. Call Gemini API
-        const prompt = `
-You are a highly accurate real estate contract parsing assistant.
-I will provide the raw text of a Purchase Agreement. 
-Extract the following information and return ONLY a valid JSON object matching this exact structure:
-{
-  "buyerBrokerage": "string or null",
-  "buyerBrokerageDre": "string or null",
-  "buyerAgent": "string or null",
-  "buyerAgentDre": "string or null",
-  "buyerAgentEmail": "string or null",
-  "buyerAgentPhone": "string or null",
-  "purchasePrice": "number (no commas or symbols) or null",
-  "initialDeposit": "number (no commas or symbols) or null",
-  "loanAmount": "number (no commas or symbols) or null",
-  "coeDays": "number (days) or null",
-  "sellerCredit": "number (no commas or symbols) or null",
-  "loanContingency": "number (days) or null",
-  "appraisalContingency": "number (days) or null",
-  "inspectionContingency": "number (days) or null",
-  "insuranceContingency": "number (days) or null",
-  "sellerDocContingency": "number (days) or null",
-  "commonInterestContingency": "number (days) or null",
-  "leasedLienContingency": "number (days) or null"
-}
-If a value is not found or is blank, return null. For Days, return an integer.
-Raw text:
-${fullText}
-`;
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${window.GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { response_mime_type: "application/json" }
-            })
-        });
-
-        if (!response.ok) {
-            const errBody = await response.text();
-            throw new Error(`Gemini API Error: ${response.status} ${errBody}`);
+        // 2. Call Firebase Cloud Function
+        const extractPurchaseAgreementData = httpsCallable(functions, 'extractPurchaseAgreementData');
+        const result = await extractPurchaseAgreementData({ text: fullText });
+        
+        if (result.data && result.data.success === false) {
+            console.error("Backend Error Object:", result.data);
+            throw new Error(`Backend Error: ${result.data.message || result.data.stringified}`);
         }
 
-        const jsonResp = await response.json();
-        let extractedJsonStr = jsonResp.candidates[0].content.parts[0].text;
-        
-        // Clean markdown block if present
-        if (extractedJsonStr.startsWith('\`\`\`json')) {
-            extractedJsonStr = extractedJsonStr.replace(/^\`\`\`json/, '').replace(/\`\`\`$/, '');
-        }
-        
-        const extracted = JSON.parse(extractedJsonStr);
+        const extracted = result.data.data;
 
         // 3. Map to HTML elements
         const mappings = {
@@ -1514,7 +1467,9 @@ ${fullText}
             'ai-loan': extracted.loanContingency,
             'ai-appraisal': extracted.appraisalContingency,
             'ai-inspection': extracted.inspectionContingency,
-            'ai-seller-credit': extracted.sellerCredit
+            'ai-seller-credit': extracted.sellerCredit,
+            'ai-agent-comp-pct': extracted.buyerAgentComp,
+            'ai-finance': extracted.financingType
         };
 
         for (const [id, value] of Object.entries(mappings)) {
@@ -1523,12 +1478,11 @@ ${fullText}
                 el.value = value;
                 el.dispatchEvent(new Event('input', { bubbles: true }));
                 el.style.transition = 'background-color 0.5s ease';
-                el.style.backgroundColor = 'rgba(56, 161, 105, 0.15)'; // light success green
+                el.style.backgroundColor = 'rgba(56, 161, 105, 0.15)'; 
                 setTimeout(() => { el.style.backgroundColor = ''; }, 4000);
             }
         }
         
-        // Calculate down payment percentage if not explicitly provided but we have price and loan
         if (extracted.purchasePrice && extracted.loanAmount) {
             const price = parseFloat(extracted.purchasePrice);
             const loan = parseFloat(extracted.loanAmount);
@@ -1560,7 +1514,7 @@ ${fullText}
 
     } catch (err) {
         console.error("AI Extraction Error:", err);
-        alert("Failed to extract data: " + err.message);
+        alert("Failed to extract data securely: " + err.message);
         btn.innerHTML = originalText;
         btn.disabled = false;
     }
