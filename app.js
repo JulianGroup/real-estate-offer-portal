@@ -317,7 +317,7 @@ const initializeAppLogic = () => {
                             const statusLabel = data.status || 'Active Listing';
                             
                             let badgeHtml = '';
-                            if (statusLabel === 'Active Listing') badgeHtml = `<span style="background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; box-shadow: var(--shadow-sm);">Active</span>`;
+                            if (statusLabel === 'Active Listing') badgeHtml = `<span style="background: #22c55e; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; box-shadow: var(--shadow-sm);">Active</span>`;
                             else if (statusLabel === 'Hold') badgeHtml = `<span style="background: #eab308; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; box-shadow: var(--shadow-sm);">Hold</span>`;
                             else if (statusLabel === 'Trash') badgeHtml = `<span style="background: var(--danger); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; box-shadow: var(--shadow-sm);">Trash</span>`;
 
