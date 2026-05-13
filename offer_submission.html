@@ -26,13 +26,46 @@
         
         <!-- Offer Form -->
         <div class="card">
-            <h2 class="mb-6">Submit Your Offer</h2>
+            <h2 class="mb-6">Buyer's Agent Submit Your Offer</h2>
             <form id="public-offer-form">
                 
+                <h3 class="mb-2" style="font-size: 1.1rem; color: var(--primary-light);">Required Documents</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">Please upload your documents below. <strong>Magic AI Auto-Fill:</strong> By uploading the Purchase Offer (RPA), the Offer Details section below will get automatically filled in with AI.</p>
+                
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem;">
+                        <label class="form-label" style="margin-bottom: 0;">Purchase Agreement (RPA)</label>
+                        <button type="button" id="btn-ai-extract" class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; border-color: var(--secondary); color: var(--secondary); display: none;">✨ Auto-Fill from Contract</button>
+                    </div>
+                    <label for="ai-file-rpa" class="file-upload-area" style="cursor: pointer; display: block; text-align: center; padding: 1.5rem;">
+                        <p id="ai-file-rpa-text" style="margin: 0;">📄 Click to upload Signed Purchase Offer (.pdf)</p>
+                        <input type="file" id="ai-file-rpa" accept=".pdf" multiple style="display: none;" onchange="
+                            document.getElementById('ai-file-rpa-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Click to upload Signed Purchase Offer (.pdf)');
+                            if(this.files[0]) { document.getElementById('btn-ai-extract').style.display = 'inline-block'; } else { document.getElementById('btn-ai-extract').style.display = 'none'; }
+                        ">
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Source of Funds (Bank Statement)</label>
+                    <label for="ai-file-funds" class="file-upload-area" style="cursor: pointer; display: block; text-align: center; padding: 1.5rem;">
+                        <p id="ai-file-funds-text" style="margin: 0;">📄 Click to upload Proof of Funds (.pdf)</p>
+                        <input type="file" id="ai-file-funds" accept=".pdf" multiple style="display: none;" onchange="document.getElementById('ai-file-funds-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Click to upload Proof of Funds (.pdf)')">
+                    </label>
+                </div>
+
+                <div class="form-group mb-6">
+                    <label class="form-label">Pre-Approval Letter</label>
+                    <label for="ai-file-preapproval" class="file-upload-area" style="cursor: pointer; display: block; text-align: center; padding: 1.5rem;">
+                        <p id="ai-file-preapproval-text" style="margin: 0;">📄 Click to upload Pre-Approval (.pdf)</p>
+                        <input type="file" id="ai-file-preapproval" accept=".pdf" multiple style="display: none;" onchange="document.getElementById('ai-file-preapproval-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Click to upload Pre-Approval (.pdf)')">
+                    </label>
+                </div>
+
                 <h3 class="mb-4" style="font-size: 1.1rem; color: var(--primary-light);">Your Information</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label class="form-label">Your Name</label>
+                        <label class="form-label">Buyer Agent's Name</label>
                         <input type="text" id="agent-name" class="form-control" placeholder="e.g. John Smith" required>
                     </div>
                     <div class="form-group">
@@ -42,15 +75,7 @@
                 </div>
                 <div class="form-group mb-6">
                     <label class="form-label">Brokerage Name (Optional)</label>
-                    <input type="text" id="agent-brokerage" class="form-control" placeholder="e.g. Compass">
-                </div>
-                
-                <div style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%); border: 1px dashed rgba(147, 51, 234, 0.4); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 2rem; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                    <h4 style="color: #6D28D9; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem;">
-                        ✨ AI Auto-Fill Magic
-                    </h4>
-                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; max-width: 400px;">Save time! Upload the Purchase Agreement PDF and let our AI instantly extract all the terms and contingencies.</p>
-                    <button type="button" class="btn btn-primary" id="btn-ai-autofill" onclick="simulateAIAutoFill()" style="background: linear-gradient(135deg, var(--primary) 0%, #7C3AED 100%); border: none; padding: 0.75rem 1.5rem; font-weight: 600; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);">✨ Auto-Fill from PDF</button>
+                    <input type="text" id="agent-brokerage" class="form-control" placeholder="e.g. Broker Name">
                 </div>
 
                 <h3 class="mb-4" style="font-size: 1.1rem; color: var(--primary-light);">Offer Details</h3>
@@ -124,37 +149,7 @@
                     <textarea class="form-control" rows="2" placeholder="Briefly summarize any other terms..."></textarea>
                 </div>
 
-                <h3 class="mb-4 mt-6" style="font-size: 1.1rem; color: var(--primary-light); margin-top: 2rem;">Required Documents</h3>
-                
-                <div class="form-group">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem;">
-                        <label class="form-label" style="margin-bottom: 0;">Purchase Agreement (RPA)</label>
-                        <button type="button" id="btn-ai-extract" class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; border-color: var(--secondary); color: var(--secondary); display: none;">✨ Auto-Fill from Contract</button>
-                    </div>
-                    <label for="ai-file-rpa" class="file-upload-area" style="cursor: pointer; display: block; text-align: center; padding: 1.5rem;">
-                        <p id="ai-file-rpa-text" style="margin: 0;">📄 Click to upload Signed Purchase Offer (.pdf)</p>
-                        <input type="file" id="ai-file-rpa" accept=".pdf" multiple style="display: none;" onchange="
-                            document.getElementById('ai-file-rpa-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Click to upload Signed Purchase Offer (.pdf)');
-                            if(this.files[0]) { document.getElementById('btn-ai-extract').style.display = 'inline-block'; } else { document.getElementById('btn-ai-extract').style.display = 'none'; }
-                        ">
-                    </label>
-                </div>
 
-                <div class="form-group">
-                    <label class="form-label">Source of Funds (Bank Statement)</label>
-                    <label for="ai-file-funds" class="file-upload-area" style="cursor: pointer; display: block; text-align: center; padding: 1.5rem;">
-                        <p id="ai-file-funds-text" style="margin: 0;">📄 Click to upload Proof of Funds (.pdf)</p>
-                        <input type="file" id="ai-file-funds" accept=".pdf" multiple style="display: none;" onchange="document.getElementById('ai-file-funds-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Click to upload Proof of Funds (.pdf)')">
-                    </label>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Pre-Approval Letter</label>
-                    <label for="ai-file-preapproval" class="file-upload-area" style="cursor: pointer; display: block; text-align: center; padding: 1.5rem;">
-                        <p id="ai-file-preapproval-text" style="margin: 0;">📄 Click to upload Pre-Approval (.pdf)</p>
-                        <input type="file" id="ai-file-preapproval" accept=".pdf" multiple style="display: none;" onchange="document.getElementById('ai-file-preapproval-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Click to upload Pre-Approval (.pdf)')">
-                    </label>
-                </div>
                 
                 <button type="submit" id="btn-submit-public" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Submit Offer</button>
             </form>
