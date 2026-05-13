@@ -306,15 +306,20 @@ const initializeAppLogic = () => {
                         
                         const statusOrder = { 'Active Listing': 1, 'Hold': 2, 'Trash': 3 };
                         properties.sort((a, b) => {
-                            const valA = statusOrder[a.data.status] || 1;
-                            const valB = statusOrder[b.data.status] || 1;
+                            let statusA = a.data.status || 'Active Listing';
+                            if (statusA === 'active') statusA = 'Active Listing';
+                            let statusB = b.data.status || 'Active Listing';
+                            if (statusB === 'active') statusB = 'Active Listing';
+                            const valA = statusOrder[statusA] || 1;
+                            const valB = statusOrder[statusB] || 1;
                             return valA - valB;
                         });
 
                         properties.forEach((prop) => {
                             const data = prop.data;
                             const id = prop.id;
-                            const statusLabel = data.status || 'Active Listing';
+                            let statusLabel = data.status || 'Active Listing';
+                            if (statusLabel === 'active') statusLabel = 'Active Listing';
                             
                             let badgeHtml = '';
                             if (statusLabel === 'Active Listing') badgeHtml = `<span style="background: #22c55e; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; box-shadow: var(--shadow-sm);">Active</span>`;
@@ -411,7 +416,11 @@ const initializeAppLogic = () => {
                             if(listingCommEl) listingCommEl.value = data.listingCommission || '';
                             
                             const statusEl = document.getElementById('edit-status');
-                            if(statusEl) statusEl.value = data.status || 'Active Listing';
+                            if(statusEl) {
+                                let st = data.status || 'Active Listing';
+                                if (st === 'active') st = 'Active Listing';
+                                statusEl.value = st;
+                            }
 
                         } else {
                             alert("Property not found or unauthorized.");
