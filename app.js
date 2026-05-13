@@ -299,16 +299,38 @@ const initializeAppLogic = () => {
                             return;
                         }
                         
-                        querySnapshot.forEach((docSnap) => {
-                            const data = docSnap.data();
-                            const id = docSnap.id;
+                        let properties = [];
+                        querySnapshot.forEach(docSnap => {
+                            properties.push({ id: docSnap.id, data: docSnap.data() });
+                        });
+                        
+                        const statusOrder = { 'Active Listing': 1, 'Hold': 2, 'Trash': 3 };
+                        properties.sort((a, b) => {
+                            const valA = statusOrder[a.data.status] || 1;
+                            const valB = statusOrder[b.data.status] || 1;
+                            return valA - valB;
+                        });
+
+                        properties.forEach((prop) => {
+                            const data = prop.data;
+                            const id = prop.id;
+                            const statusLabel = data.status || 'Active Listing';
                             
+                            let badgeHtml = '';
+                            if (statusLabel === 'Active Listing') badgeHtml = `<span style="background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; box-shadow: var(--shadow-sm);">Active</span>`;
+                            else if (statusLabel === 'Hold') badgeHtml = `<span style="background: #eab308; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; box-shadow: var(--shadow-sm);">Hold</span>`;
+                            else if (statusLabel === 'Trash') badgeHtml = `<span style="background: var(--danger); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; box-shadow: var(--shadow-sm);">Trash</span>`;
+
                             const card = document.createElement('div');
                             card.className = 'card';
+                            
+                            const deleteBtnHtml = statusLabel === 'Trash' ? `<button class="btn btn-outline delete-prop-btn" data-id="${id}" style="background: white; padding: 0.25rem 0.5rem; font-size: 0.8rem; border: 1px solid var(--danger); color: var(--danger); box-shadow: var(--shadow-sm);">🗑️ Delete</button>` : '';
+
                             card.innerHTML = `
                                 <div style="height: 160px; background-color: #E2E8F0; border-radius: var(--radius-md); margin-bottom: 1rem; background-image: url('${data.imageUrl || 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=400&q=80'}'); background-size: cover; background-position: center; position: relative;">
+                                    <div style="position: absolute; top: 0.5rem; left: 0.5rem;">${badgeHtml}</div>
                                     <div style="position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.5rem;">
-                                        <button class="btn btn-outline delete-prop-btn" data-id="${id}" style="background: white; padding: 0.25rem 0.5rem; font-size: 0.8rem; border: 1px solid var(--danger); color: var(--danger); box-shadow: var(--shadow-sm);">🗑️ Delete</button>
+                                        ${deleteBtnHtml}
                                         <a href="edit_property.html?id=${id}" class="btn btn-outline" style="background: white; padding: 0.25rem 0.5rem; font-size: 0.8rem; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">✏️ Edit</a>
                                     </div>
                                 </div>
@@ -387,6 +409,9 @@ const initializeAppLogic = () => {
                             if(ownerMobileEl) ownerMobileEl.value = data.ownerMobile || '';
                             const listingCommEl = document.getElementById('edit-listing-commission');
                             if(listingCommEl) listingCommEl.value = data.listingCommission || '';
+                            
+                            const statusEl = document.getElementById('edit-status');
+                            if(statusEl) statusEl.value = data.status || 'Active Listing';
 
                         } else {
                             alert("Property not found or unauthorized.");
@@ -658,6 +683,8 @@ const initializeAppLogic = () => {
             const price = document.getElementById('prop-price').value;
             const desc = document.getElementById('prop-desc').value;
             const fileInput = document.getElementById('prop-image');
+            const statusEl = document.getElementById('prop-status');
+            const status = statusEl ? statusEl.value : 'Active Listing';
             
             // Optional owner details
             const ownerNameEl = document.getElementById('prop-owner-name');
@@ -714,7 +741,7 @@ const initializeAppLogic = () => {
                     ownerMobile: ownerMobile,
                     listingCommission: listingCommission,
                     createdAt: new Date(),
-                    status: 'active',
+                    status: status,
                     imageUrl: finalImageUrl
                 });
                 
@@ -749,6 +776,7 @@ const initializeAppLogic = () => {
             const price = document.getElementById('edit-price').value;
             const desc = document.getElementById('edit-desc').value;
             const fileInput = document.getElementById('edit-image');
+            const statusEl = document.getElementById('edit-status');
             
             // Optional owner details
             const ownerNameEl = document.getElementById('edit-owner-name');
@@ -771,6 +799,9 @@ const initializeAppLogic = () => {
                     ownerMobile: ownerMobile,
                     listingCommission: listingCommission
                 };
+                if (statusEl) {
+                    updates.status = statusEl.value;
+                }
                 
                 if (fileInput && fileInput.files && fileInput.files.length > 0) {
                     updates.imageUrl = await compressImage(fileInput.files[0]);
