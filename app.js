@@ -1,8 +1,8 @@
 import { 
-    auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
+    auth, db, storage, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
     onAuthStateChanged, signOut, updateProfile, doc, setDoc, getDoc,
     collection, addDoc, query, where, onSnapshot, getDocs, sendPasswordResetEmail, deleteDoc,
-    functions, httpsCallable
+    functions, httpsCallable, ref, uploadBytes, getDownloadURL
 } from './firebase-config.js';
 
 // Helper to compress image to Base64
@@ -873,26 +873,41 @@ const initializeAppLogic = () => {
         }
         const sellerCredit = document.getElementById('ai-seller-credit') ? document.getElementById('ai-seller-credit').value : '';
 
-        // Capture uploaded document names
+        // Upload documents to Firebase Storage
         const docs = [];
+        const uploadDoc = async (file, type) => {
+            if (!file) return;
+            const uniqueName = `${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, `offers/${propertyId}/${uniqueName}`);
+            await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(storageRef);
+            docs.push({ type: type, name: file.name, url: url });
+        };
+
         const fileRpa = document.getElementById('ai-file-rpa');
         const fileFunds = document.getElementById('ai-file-funds');
         const filePreapproval = document.getElementById('ai-file-preapproval');
-        
-        if (fileRpa && fileRpa.files) {
-            for(let i = 0; i < fileRpa.files.length; i++) {
-                docs.push({ type: 'Purchase Agreement', name: fileRpa.files[i].name });
+
+        try {
+            if (btn) btn.innerText = 'Uploading documents...';
+            if (fileRpa && fileRpa.files) {
+                for(let i = 0; i < fileRpa.files.length; i++) await uploadDoc(fileRpa.files[i], 'Purchase Agreement');
             }
-        }
-        if (fileFunds && fileFunds.files) {
-            for(let i = 0; i < fileFunds.files.length; i++) {
-                docs.push({ type: 'Proof of Funds', name: fileFunds.files[i].name });
+            if (fileFunds && fileFunds.files) {
+                for(let i = 0; i < fileFunds.files.length; i++) await uploadDoc(fileFunds.files[i], 'Proof of Funds');
             }
-        }
-        if (filePreapproval && filePreapproval.files) {
-            for(let i = 0; i < filePreapproval.files.length; i++) {
-                docs.push({ type: 'Pre-Approval', name: filePreapproval.files[i].name });
+            if (filePreapproval && filePreapproval.files) {
+                for(let i = 0; i < filePreapproval.files.length; i++) await uploadDoc(filePreapproval.files[i], 'Pre-Approval');
             }
+            if (btn) btn.innerText = 'Saving offer...';
+        } catch (uploadError) {
+            console.error("Error uploading documents:", uploadError);
+            alert("Failed to upload documents: " + uploadError.message);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = 'Submit Offer';
+            }
+            return;
         }
 
         try {
@@ -1455,8 +1470,65 @@ window.viewDocuments = (offerId) => {
         return;
     }
     
-    let docList = docs.map(d => `• ${d.type}: ${d.name}`).join('\n');
-    alert(`Attached Documents for Review:\n\n${docList}\n\n[Prototype Note: In a production environment, clicking this would open these PDFs directly from Firebase Storage.]`);
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.6)';
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.zIndex = '9999';
+
+    const modal = document.createElement('div');
+    modal.style.background = 'white';
+    modal.style.padding = '2rem';
+    modal.style.borderRadius = '8px';
+    modal.style.width = '90%';
+    modal.style.maxWidth = '500px';
+    modal.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
+
+    let html = `<h2 style="margin-top: 0; margin-bottom: 1rem; color: var(--text-dark);">Attached Documents</h2>`;
+    html += `<div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; max-height: 60vh; overflow-y: auto;">`;
+    
+    docs.forEach(d => {
+        if (d.url) {
+            html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 6px;">
+                        <div style="overflow: hidden; text-overflow: ellipsis;">
+                            <p style="margin: 0; font-weight: 600;">${d.type}</p>
+                            <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">${d.name}</p>
+                        </div>
+                        <a href="${d.url}" target="_blank" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem; white-space: nowrap;">View PDF</a>
+                     </div>`;
+        } else {
+            html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 6px;">
+                        <div style="overflow: hidden; text-overflow: ellipsis;">
+                            <p style="margin: 0; font-weight: 600;">${d.type}</p>
+                            <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px;">${d.name}</p>
+                        </div>
+                        <span style="font-size: 0.8rem; color: var(--danger);">Legacy Prototype</span>
+                     </div>`;
+        }
+    });
+    
+    html += `</div>`;
+    html += `<button class="btn btn-outline" style="width: 100%;" id="btn-close-modal">Close</button>`;
+    
+    modal.innerHTML = html;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    document.getElementById('btn-close-modal').onclick = () => {
+        document.body.removeChild(overlay);
+    };
+    
+    overlay.onclick = (e) => {
+        if (e.target === overlay) {
+            document.body.removeChild(overlay);
+        }
+    };
 };
 
 window.executeAIExtraction = async () => {

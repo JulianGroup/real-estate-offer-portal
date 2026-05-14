@@ -2,6 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebas
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, getDoc, doc, setDoc, query, where, getDocs, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-functions.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAsIOzW20GIdsk1p0P8C3mFJsZVXUnFQrI",
@@ -18,11 +19,13 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const functions = getFunctions(app);
+const storage = getStorage(app);
 
 // Export for use in other JS files
 export { 
     auth, 
     db, 
+    storage,
     createUserWithEmailAndPassword, 
     signInWithEmailAndPassword, 
     onAuthStateChanged, 
@@ -40,5 +43,8 @@ export {
     getDocs,
     deleteDoc,
     functions,
-    httpsCallable
+    httpsCallable,
+    ref,
+    uploadBytes,
+    getDownloadURL
 };
