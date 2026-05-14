@@ -676,6 +676,42 @@ const initializeAppLogic = () => {
         }
     };
 
+    // Autocomplete Initialization
+    window.streetViewUrl = null;
+    const checkMapsLoaded = setInterval(() => {
+        if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+            clearInterval(checkMapsLoaded);
+            
+            const setupAutocomplete = (inputId) => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    const autocomplete = new google.maps.places.Autocomplete(input, { types: ['address'] });
+                    autocomplete.addListener('place_changed', () => {
+                        const place = autocomplete.getPlace();
+                        if (place.geometry && place.geometry.location) {
+                            const lat = place.geometry.location.lat();
+                            const lng = place.geometry.location.lng();
+                            const svUrl = `https://maps.googleapis.com/maps/api/streetview?size=800x600&location=${lat},${lng}&key=AIzaSyBTzxAQ40a9bwHZLmkyWbQQYTSejT-SQ90`;
+                            window.streetViewUrl = svUrl;
+                            
+                            let previewContainer = document.getElementById('sv-preview-' + inputId);
+                            if (!previewContainer) {
+                                previewContainer = document.createElement('div');
+                                previewContainer.id = 'sv-preview-' + inputId;
+                                previewContainer.style.marginTop = '10px';
+                                input.parentNode.appendChild(previewContainer);
+                            }
+                            previewContainer.innerHTML = `<p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">Auto-generated Street View (used if no image uploaded):</p><img src="${svUrl}" style="max-width: 100%; border-radius: 8px; height: 150px; object-fit: cover; border: 1px solid var(--border);">`;
+                        }
+                    });
+                }
+            };
+            
+            setupAutocomplete('prop-address');
+            setupAutocomplete('edit-address');
+        }
+    }, 500);
+
     // 6. Create Property Form Handler
     const createPropForm = document.getElementById('create-property-form');
     if (createPropForm) {
@@ -710,6 +746,8 @@ const initializeAppLogic = () => {
                 let finalImageUrl;
                 if (fileInput && fileInput.files && fileInput.files.length > 0) {
                     finalImageUrl = await compressImage(fileInput.files[0]);
+                } else if (window.streetViewUrl) {
+                    finalImageUrl = window.streetViewUrl;
                 } else {
                     const placeholderImages = [
                         'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80',
@@ -814,6 +852,8 @@ const initializeAppLogic = () => {
                 
                 if (fileInput && fileInput.files && fileInput.files.length > 0) {
                     updates.imageUrl = await compressImage(fileInput.files[0]);
+                } else if (window.streetViewUrl) {
+                    updates.imageUrl = window.streetViewUrl;
                 }
 
                 await setDoc(doc(db, "properties", propertyId), updates, { merge: true });
