@@ -1094,19 +1094,21 @@ const initializeAppLogic = () => {
                     
                     if (emailBtn) {
                         emailBtn.addEventListener('click', () => {
+                            const recipient = propData.ownerEmail ? propData.ownerEmail : "";
                             const subject = encodeURIComponent(`Offers for ${propData.address}`);
                             const body = encodeURIComponent(`Hi,\n\nHere is the link to view the offers for ${propData.address}:\n${fullSellerUrl}`);
-                            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                            window.location.href = `mailto:${recipient}?subject=${subject}&body=${body}`;
                         });
                     }
                     if (textBtn) {
                         textBtn.addEventListener('click', () => {
+                            const recipient = propData.ownerMobile ? propData.ownerMobile.replace(/\D/g, '') : "";
                             const body = encodeURIComponent(`Hi, here is the link to view the offers for ${propData.address}: ${fullSellerUrl}`);
                             const ua = navigator.userAgent.toLowerCase();
                             if (ua.indexOf("iphone") > -1 || ua.indexOf("ipad") > -1) {
-                                window.location.href = `sms:&body=${body}`;
+                                window.location.href = `sms:${recipient}&body=${body}`;
                             } else {
-                                window.location.href = `sms:?body=${body}`;
+                                window.location.href = `sms:${recipient}?body=${body}`;
                             }
                         });
                     }
