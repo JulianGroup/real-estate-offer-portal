@@ -1058,9 +1058,31 @@ const initializeAppLogic = () => {
         if (propertyId) {
             // Update header links
             const manualLink = document.getElementById('link-manual-offer');
-            const sellerLink = document.getElementById('link-seller-presentation');
             if (manualLink) manualLink.href = `manual_offer.html?id=${propertyId}`;
-            if (sellerLink) sellerLink.href = `seller_presentation.html?id=${propertyId}`;
+
+            // Build the absolute seller presentation URL
+            let baseUrl = window.location.origin + window.location.pathname;
+            baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/'));
+            if (!baseUrl.endsWith('/')) baseUrl += '/';
+            const fullSellerUrl = baseUrl + `seller_presentation.html?id=${propertyId}`;
+
+            const emailBtn = document.getElementById('btn-email-seller');
+            const textBtn = document.getElementById('btn-text-seller');
+            const copyBtn = document.getElementById('btn-copy-seller-link');
+
+            if (copyBtn) {
+                copyBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    navigator.clipboard.writeText(fullSellerUrl).then(() => {
+                        const originalText = copyBtn.innerText;
+                        copyBtn.innerText = 'Copied!';
+                        setTimeout(() => copyBtn.innerText = originalText, 2000);
+                    }).catch(err => {
+                        console.error('Copy failed', err);
+                        alert('Could not copy automatically. Link: ' + fullSellerUrl);
+                    });
+                });
+            }
 
             // Fetch property details for header
             getDoc(doc(db, "properties", propertyId)).then(async (docSnap) => {
@@ -1069,6 +1091,25 @@ const initializeAppLogic = () => {
                     propData = docSnap.data();
                     const header = document.getElementById('prop-address-header');
                     if (header) header.innerText = propData.address;
+                    
+                    if (emailBtn) {
+                        emailBtn.addEventListener('click', () => {
+                            const subject = encodeURIComponent(`Offers for ${propData.address}`);
+                            const body = encodeURIComponent(`Hi,\n\nHere is the link to view the offers for ${propData.address}:\n${fullSellerUrl}`);
+                            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                        });
+                    }
+                    if (textBtn) {
+                        textBtn.addEventListener('click', () => {
+                            const body = encodeURIComponent(`Hi, here is the link to view the offers for ${propData.address}: ${fullSellerUrl}`);
+                            const ua = navigator.userAgent.toLowerCase();
+                            if (ua.indexOf("iphone") > -1 || ua.indexOf("ipad") > -1) {
+                                window.location.href = `sms:&body=${body}`;
+                            } else {
+                                window.location.href = `sms:?body=${body}`;
+                            }
+                        });
+                    }
                     
                     const agentHeader = document.getElementById('agent-info-header');
                     if (agentHeader && propData.agentId) {
