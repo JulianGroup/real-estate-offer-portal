@@ -213,7 +213,8 @@ const initializeAppLogic = () => {
                         if (docSnap.exists() && docSnap.data().team) {
                             let team = docSnap.data().team;
                             team.splice(index, 1);
-                            await setDoc(docRef, { team: team }, { merge: true });
+                            const teamEmails = team.map(m => m.email.toLowerCase());
+                            await setDoc(docRef, { team: team, teamEmails: teamEmails }, { merge: true });
                             await window.refreshTeam();
                         }
                     } catch (error) {
@@ -250,7 +251,8 @@ const initializeAppLogic = () => {
                             }
 
                             team.push({ email, role, addedAt: new Date().toISOString() });
-                            await setDoc(docRef, { team: team }, { merge: true });
+                            const teamEmails = team.map(m => m.email.toLowerCase());
+                            await setDoc(docRef, { team: team, teamEmails: teamEmails }, { merge: true });
                             
                             inviteForm.reset();
                             await window.refreshTeam();
@@ -291,8 +293,16 @@ const initializeAppLogic = () => {
             if (path.includes('index.html') || path === '/' || path.endsWith('real_estate_offer_portal/')) {
                 const listingsContainer = document.getElementById('listings-container');
                 if (listingsContainer) {
-                    const q = query(collection(db, "properties"), where("agentId", "==", user.uid));
-                    onSnapshot(q, (querySnapshot) => {
+                    const userEmail = user.email ? user.email.toLowerCase() : "";
+                    getDocs(query(collection(db, "users"), where("teamEmails", "array-contains", userEmail))).then(inviterSnap => {
+                        let agentIds = [user.uid];
+                        inviterSnap.forEach(doc => agentIds.push(doc.id));
+                        
+                        // Firebase 'in' queries allow up to 10 elements
+                        if (agentIds.length > 10) agentIds = agentIds.slice(0, 10);
+                        
+                        const q = query(collection(db, "properties"), where("agentId", "in", agentIds));
+                        onSnapshot(q, (querySnapshot) => {
                         listingsContainer.innerHTML = ''; // Clear loading text
                         if (querySnapshot.empty) {
                             listingsContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius-md);"><p class="text-muted">You have no active listings. Create one to get started!</p></div>';
@@ -390,6 +400,7 @@ const initializeAppLogic = () => {
                         console.error("Error fetching properties:", error);
                         listingsContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius-md);"><p class="text-danger">Error loading properties. Make sure Firestore is initialized in Test Mode.</p></div>';
                     });
+                    }).catch(err => console.error("Error fetching inviters:", err));
                 }
             }
 
@@ -398,33 +409,45 @@ const initializeAppLogic = () => {
                 const urlParams = new URLSearchParams(window.location.search);
                 const propertyId = urlParams.get('id');
                 if (propertyId) {
-                    getDoc(doc(db, "properties", propertyId)).then(docSnap => {
-                        if (docSnap.exists() && docSnap.data().agentId === user.uid) {
+                    getDoc(doc(db, "properties", propertyId)).then(async docSnap => {
+                        if (docSnap.exists()) {
                             const data = docSnap.data();
-                            document.getElementById('edit-address').value = data.address || '';
-                            document.getElementById('edit-price').value = data.askingPrice || '';
-                            document.getElementById('edit-desc').value = data.description || '';
-                            
-                            // Load owner details if they exist
-                            const ownerNameEl = document.getElementById('edit-owner-name');
-                            const ownerEmailEl = document.getElementById('edit-owner-email');
-                            const ownerMobileEl = document.getElementById('edit-owner-mobile');
-                            if(ownerNameEl) ownerNameEl.value = data.ownerName || '';
-                            if(ownerEmailEl) ownerEmailEl.value = data.ownerEmail || '';
-                            if(ownerMobileEl) ownerMobileEl.value = data.ownerMobile || '';
-                            const listingCommEl = document.getElementById('edit-listing-commission');
-                            if(listingCommEl) listingCommEl.value = data.listingCommission || '';
-                            
-                            const statusEl = document.getElementById('edit-status');
-                            if(statusEl) {
-                                let st = data.status || 'Active Listing';
-                                if (st === 'active') st = 'Active Listing';
-                                statusEl.value = st;
+                            let isAuthorized = data.agentId === user.uid;
+                            if (!isAuthorized) {
+                                try {
+                                    const ownerSnap = await getDoc(doc(db, "users", data.agentId));
+                                    if (ownerSnap.exists() && ownerSnap.data().teamEmails && ownerSnap.data().teamEmails.includes(user.email ? user.email.toLowerCase() : "")) {
+                                        isAuthorized = true;
+                                    }
+                                } catch(e) { console.error("Error checking team auth:", e); }
                             }
+                            
+                            if (isAuthorized) {
+                                document.getElementById('edit-address').value = data.address || '';
+                                document.getElementById('edit-price').value = data.askingPrice || '';
+                                document.getElementById('edit-desc').value = data.description || '';
+                                
+                                // Load owner details if they exist
+                                const ownerNameEl = document.getElementById('edit-owner-name');
+                                const ownerEmailEl = document.getElementById('edit-owner-email');
+                                const ownerMobileEl = document.getElementById('edit-owner-mobile');
+                                if(ownerNameEl) ownerNameEl.value = data.ownerName || '';
+                                if(ownerEmailEl) ownerEmailEl.value = data.ownerEmail || '';
+                                if(ownerMobileEl) ownerMobileEl.value = data.ownerMobile || '';
+                                const listingCommEl = document.getElementById('edit-listing-commission');
+                                if(listingCommEl) listingCommEl.value = data.listingCommission || '';
+                                
+                                const statusEl = document.getElementById('edit-status');
+                                if(statusEl) {
+                                    let st = data.status || 'Active Listing';
+                                    if (st === 'active') st = 'Active Listing';
+                                    statusEl.value = st;
+                                }
 
-                        } else {
-                            alert("Property not found or unauthorized.");
-                            window.location.href = 'index.html';
+                            } else {
+                                alert("Property not found or unauthorized.");
+                                window.location.href = 'index.html';
+                            }
                         }
                     }).catch(err => {
                         console.error("Error fetching property:", err);
@@ -617,45 +640,7 @@ const initializeAppLogic = () => {
         });
     }
 
-    // 6. Team Invite Form Handler
-    const teamInviteForm = document.getElementById('team-invite-form');
-    if (teamInviteForm) {
-        teamInviteForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-send-invite');
-            btn.disabled = true;
-            btn.innerText = 'Inviting...';
-            
-            const user = auth.currentUser;
-            if (!user) return;
 
-            const email = document.getElementById('invite-email').value;
-            const role = document.getElementById('invite-role').value;
-
-            try {
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                let team = [];
-                if (userDoc.exists()) {
-                    team = userDoc.data().team || [];
-                }
-                
-                if (team.find(m => m.email.toLowerCase() === email.toLowerCase())) {
-                    alert("This user is already on your team.");
-                } else {
-                    team.push({ email: email, role: role });
-                    await setDoc(doc(db, "users", user.uid), { team: team }, { merge: true });
-                    document.getElementById('invite-email').value = '';
-                    if (window.refreshTeam) window.refreshTeam();
-                }
-            } catch (error) {
-                console.error("Error inviting team member:", error);
-                alert("Error inviting member: " + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = 'Send Invite';
-            }
-        });
-    }
 
     // Global function to remove team member
     window.removeTeamMember = async (index) => {
