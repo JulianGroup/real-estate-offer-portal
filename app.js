@@ -427,6 +427,12 @@ const initializeAppLogic = () => {
                                 document.getElementById('edit-price').value = data.askingPrice || '';
                                 document.getElementById('edit-desc').value = data.description || '';
                                 
+                                const subtitleEl = document.getElementById('edit-property-subtitle');
+                                if (subtitleEl) subtitleEl.innerText = `Update details for ${data.address || 'this property'}.`;
+                                
+                                const imagePreviewEl = document.getElementById('edit-property-image-preview');
+                                if (imagePreviewEl && data.imageUrl) imagePreviewEl.src = data.imageUrl;
+                                
                                 // Load owner details if they exist
                                 const ownerNameEl = document.getElementById('edit-owner-name');
                                 const ownerEmailEl = document.getElementById('edit-owner-email');
@@ -673,6 +679,15 @@ const initializeAppLogic = () => {
                     const autocomplete = new google.maps.places.Autocomplete(input, { types: ['address'] });
                     autocomplete.addListener('place_changed', () => {
                         const place = autocomplete.getPlace();
+                        if (place.formatted_address) {
+                            let cleanAddress = place.formatted_address;
+                            if (cleanAddress.endsWith(', USA')) {
+                                cleanAddress = cleanAddress.substring(0, cleanAddress.length - 5);
+                            } else if (cleanAddress.endsWith(' USA')) {
+                                cleanAddress = cleanAddress.substring(0, cleanAddress.length - 4);
+                            }
+                            input.value = cleanAddress;
+                        }
                         if (place.geometry && place.geometry.location) {
                             const lat = place.geometry.location.lat();
                             const lng = place.geometry.location.lng();
