@@ -1215,6 +1215,28 @@ const initializeAppLogic = () => {
                             });
                         });
 
+                        const statusWeights = {
+                            'accepted': 1,
+                            'counter offer': 2,
+                            'in review': 3,
+                            'pending': 3,
+                            'ignore': 4
+                        };
+                        
+                        processedOffers.sort((a, b) => {
+                            const statusA = a.data.status ? a.data.status.toLowerCase() : 'in review';
+                            const statusB = b.data.status ? b.data.status.toLowerCase() : 'in review';
+                            
+                            const weightA = statusWeights[statusA] || 3;
+                            const weightB = statusWeights[statusB] || 3;
+                            
+                            if (weightA !== weightB) {
+                                return weightA - weightB;
+                            }
+                            
+                            return b.priceVal - a.priceVal;
+                        });
+
                         // BUILD CARD VIEW
                         processedOffers.forEach((offer) => {
                             const { data, id: offerId, isHighest, listingAgentCompDollar, buyerAgentCompDollar, buyersNet } = offer;
@@ -1227,11 +1249,24 @@ const initializeAppLogic = () => {
 
                             const isSellerView = window.location.pathname.includes('seller_presentation.html');
 
+                            let currentStatus = data.status ? data.status.toLowerCase() : 'in review';
+                            if (currentStatus === 'pending') currentStatus = 'in review';
+
+                            const statusColors = {
+                                'accepted': 'var(--success)',
+                                'counter offer': '#f59e0b',
+                                'in review': 'var(--text)',
+                                'ignore': 'var(--danger)'
+                            };
+
                             const actionButtonsHtml = isSellerView ? '' : `
                                 <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: stretch;">
-                                    ${data.status === 'accepted' 
-                                        ? `<button class="btn btn-success" style="background-color: var(--success); color: white;" onclick="window.undoAcceptOffer('${offerId}')">✓ Offer Accepted (Undo)</button>` 
-                                        : `<button class="btn btn-outline" id="btn-accept-${offerId}" onclick="window.acceptOffer('${offerId}', 'offer-${offerId}-dates')">Accept Offer</button>`}
+                                    <select id="status-select-${offerId}" class="form-control" style="font-weight: 600; color: ${statusColors[currentStatus] || 'var(--text)'}; border-color: ${statusColors[currentStatus] || 'var(--border)'};" onchange="window.changeOfferStatus('${offerId}', this.value, 'offer-${offerId}-dates', '${currentStatus}')">
+                                        <option value="accepted" ${currentStatus === 'accepted' ? 'selected' : ''}>Accepted</option>
+                                        <option value="counter offer" ${currentStatus === 'counter offer' ? 'selected' : ''}>Counter Offer</option>
+                                        <option value="in review" ${currentStatus === 'in review' ? 'selected' : ''}>In Review</option>
+                                        <option value="ignore" ${currentStatus === 'ignore' ? 'selected' : ''}>Ignore</option>
+                                    </select>
                                     <button class="btn btn-outline" onclick="window.viewDocuments('${offerId}')">View Documents</button>
                                 </div>
                             `;
@@ -1270,10 +1305,28 @@ const initializeAppLogic = () => {
                                         <p class="text-success" style="margin-bottom: 0.5rem; font-size: 1.1rem;"><strong>Buyer's Net (Proceeds):</strong> $${buyersNet.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
                                         <div style="display: flex; gap: 0.5rem; font-size: 0.8rem; flex-wrap: wrap;" id="offer-${offerId}-dates">
                                             <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);"><strong>Deposit:</strong> ${data.deposit}</span>
-                                            <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${data.coeDays}"><strong>COE:</strong> ${data.coeDays} Days</span>
-                                            <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${data.loanDays}"><strong>Loan:</strong> ${data.loanDays} Days</span>
-                                            <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${data.appraisalDays}"><strong>Appraisal:</strong> ${data.appraisalDays} Days</span>
-                                            <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${data.inspectionDays}"><strong>Inspection:</strong> ${data.inspectionDays} Days</span>
+                                            ${(() => {
+                                                const formatCalcDate = (days, label) => {
+                                                    let html = `<span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${days}"><strong>${label}:</strong> ${days} Days</span>`;
+                                                    if (data.status === 'accepted' && data.acceptedDate) {
+                                                        const pDays = parseInt(days);
+                                                        if (!isNaN(pDays)) {
+                                                            let acceptedDate = data.acceptedDate.toDate ? data.acceptedDate.toDate() : new Date(data.acceptedDate);
+                                                            if (data.acceptedDate.seconds) acceptedDate = new Date(data.acceptedDate.seconds * 1000);
+                                                            
+                                                            let targetDate = new Date(acceptedDate);
+                                                            targetDate.setDate(targetDate.getDate() + pDays);
+                                                            let formattedDate = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                                            html = `<span style="background: rgba(56, 161, 105, 0.05); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--success);" class="calc-date" data-days="${days}"><strong style="color: var(--success);">${label}:</strong> ${formattedDate}</span>`;
+                                                        }
+                                                    }
+                                                    return html;
+                                                };
+                                                return formatCalcDate(data.coeDays, "COE") +
+                                                       formatCalcDate(data.loanDays, "Loan") +
+                                                       formatCalcDate(data.appraisalDays, "Appraisal") +
+                                                       formatCalcDate(data.inspectionDays, "Inspection");
+                                            })()}
                                         </div>
                                     </div>
                                     ${actionButtonsHtml}
@@ -1485,63 +1538,58 @@ window.deleteProperty = async (propertyId) => {
 };
 
 // Global functions need to be explicitly attached to window when using type="module"
-window.acceptOffer = async (offerId, containerId) => {
-    let today = new Date().toISOString().split('T')[0];
-    let acceptedDateStr = prompt("Enter the date the offer was accepted (YYYY-MM-DD):", today);
-    if (!acceptedDateStr) return; 
-    
-    let acceptedDate = new Date(acceptedDateStr + "T00:00:00"); 
-    if (isNaN(acceptedDate.getTime())) {
-        alert("Invalid date format. Please use YYYY-MM-DD.");
-        return;
-    }
+window.changeOfferStatus = async (offerId, newStatus, containerId, oldStatus) => {
+    if (newStatus === oldStatus) return;
 
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    const dateSpans = container.querySelectorAll('.calc-date');
-    dateSpans.forEach(span => {
-        let days = parseInt(span.getAttribute('data-days'), 10);
-        if (!isNaN(days)) {
-            let targetDate = new Date(acceptedDate);
-            targetDate.setDate(targetDate.getDate() + days);
-            let formattedDate = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            let label = span.querySelector('strong').innerText;
-            span.innerHTML = `<strong style="color: var(--success);">${label}</strong> ${formattedDate}`;
-            span.style.borderColor = 'var(--success)';
-            span.style.backgroundColor = 'rgba(56, 161, 105, 0.05)';
+    if (newStatus === 'accepted') {
+        let today = new Date().toISOString().split('T')[0];
+        let acceptedDateStr = prompt("Enter the date the offer was accepted (YYYY-MM-DD):", today);
+        if (!acceptedDateStr) {
+            const selectEl = document.getElementById(`status-select-${offerId}`);
+            if (selectEl) selectEl.value = oldStatus;
+            return;
         }
-    });
-
-    const btn = document.getElementById(`btn-accept-${offerId}`);
-    if (btn) {
-        btn.innerText = "Saving...";
-        btn.disabled = true;
-    }
-
-    try {
-        await setDoc(doc(db, "offers", offerId), {
-            status: 'accepted',
-            acceptedDate: acceptedDate
-        }, { merge: true });
         
-        alert(`Offer accepted on ${acceptedDate.toLocaleDateString('en-US')}!\n\nAll contingency and COE dates have been automatically calculated based on the days specified in the offer. Status securely saved to database.`);
-    } catch(err) {
-        console.error("Error saving accepted status:", err);
-        alert("Calculated dates, but error saving status to database: " + err.message);
-    }
-};
+        let acceptedDate = new Date(acceptedDateStr + "T00:00:00"); 
+        if (isNaN(acceptedDate.getTime())) {
+            alert("Invalid date format. Please use YYYY-MM-DD.");
+            const selectEl = document.getElementById(`status-select-${offerId}`);
+            if (selectEl) selectEl.value = oldStatus;
+            return;
+        }
 
-window.undoAcceptOffer = async (offerId) => {
-    if (confirm("Are you sure you want to un-accept this offer?\n\nThis will reset the offer status and all calculated contingency dates will revert to their original timeline.")) {
         try {
             await setDoc(doc(db, "offers", offerId), {
-                status: 'pending',
+                status: 'accepted',
+                acceptedDate: acceptedDate
+            }, { merge: true });
+            
+            alert(`Offer accepted on ${acceptedDate.toLocaleDateString('en-US')}!\n\nAll contingency and COE dates have been automatically calculated based on the days specified in the offer. Status securely saved to database.`);
+        } catch(err) {
+            console.error("Error saving accepted status:", err);
+            alert("Error saving status to database: " + err.message);
+            const selectEl = document.getElementById(`status-select-${offerId}`);
+            if (selectEl) selectEl.value = oldStatus;
+        }
+    } else {
+        if (oldStatus === 'accepted') {
+            if (!confirm("Changing this offer's status from 'Accepted' will clear the accepted date and reset the calculated contingency deadlines. Are you sure?")) {
+                const selectEl = document.getElementById(`status-select-${offerId}`);
+                if (selectEl) selectEl.value = oldStatus;
+                return;
+            }
+        }
+
+        try {
+            await setDoc(doc(db, "offers", offerId), {
+                status: newStatus,
                 acceptedDate: null
             }, { merge: true });
         } catch(err) {
-            console.error("Error undoing offer:", err);
+            console.error("Error changing offer status:", err);
             alert("Error: " + err.message);
+            const selectEl = document.getElementById(`status-select-${offerId}`);
+            if (selectEl) selectEl.value = oldStatus;
         }
     }
 };
