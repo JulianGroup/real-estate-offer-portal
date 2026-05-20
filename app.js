@@ -239,7 +239,7 @@ const initializeAppLogic = () => {
 
                         try {
                             const email = document.getElementById('invite-email').value;
-                            const role = document.getElementById('invite-role').value;
+                            const role = 'Team Member';
 
                             const docRef = doc(db, "users", user.uid);
                             const docSnap = await getDoc(docRef);
