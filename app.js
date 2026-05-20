@@ -964,6 +964,8 @@ const initializeAppLogic = () => {
             return;
         }
 
+        const otherNotes = document.getElementById('ai-other-notes') ? document.getElementById('ai-other-notes').value : '';
+
         try {
             await addDoc(collection(db, "offers"), {
                 propertyId: propertyId,
@@ -981,6 +983,7 @@ const initializeAppLogic = () => {
                 buyerAgentCompPct: compPct,
                 buyerAgentCompDollar: compDollar,
                 sellerCredit: sellerCredit,
+                otherNotes: otherNotes,
                 documents: docs,
                 status: 'pending',
                 submittedAt: new Date(),
@@ -1029,6 +1032,11 @@ const initializeAppLogic = () => {
                     
                     const priceHeader = document.getElementById('public-prop-price');
                     if (priceHeader) priceHeader.innerText = `Asking: ${propData.askingPrice || 'TBD'}`;
+
+                    const heroHeader = document.getElementById('property-hero-header');
+                    if (heroHeader && propData.photoUrl) {
+                        heroHeader.style.backgroundImage = `linear-gradient(rgba(26, 54, 93, 0.8), rgba(26, 54, 93, 0.8)), url('${propData.photoUrl}')`;
+                    }
                     
                     const formatPhone = (str) => {
                         if (!str) return '';
