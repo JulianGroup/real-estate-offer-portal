@@ -154,7 +154,12 @@ const initializeAppLogic = () => {
                         alert("Error loading admin dashboard: " + error.message);
                     }
                 }
-            }).catch(e => console.error("Error checking RBAC:", e));
+            }).catch(e => {
+                console.error("Error checking RBAC:", e);
+                if (e.code === 'permission-denied') {
+                    signOut(auth).then(() => window.location.href = 'login.html');
+                }
+            });
 
             // Load Settings Profile if on settings page
             if (path.includes('settings.html')) {
@@ -290,7 +295,7 @@ const initializeAppLogic = () => {
 
 
             // Load Properties if on index page
-            if (path.includes('index.html') || path === '/' || path.endsWith('real_estate_offer_portal/')) {
+            if (path.includes('index.html') || path === '/' || path.includes('real-estate-offer-portal')) {
                 const listingsContainer = document.getElementById('listings-container');
                 if (listingsContainer) {
                     const userEmail = user.email ? user.email.toLowerCase() : "";
@@ -398,9 +403,18 @@ const initializeAppLogic = () => {
                         });
                     }, (error) => {
                         console.error("Error fetching properties:", error);
-                        listingsContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius-md);"><p class="text-danger">Error loading properties. Make sure Firestore is initialized in Test Mode.</p></div>';
+                        if (error.code === 'permission-denied') {
+                            signOut(auth).then(() => window.location.href = 'login.html');
+                        } else {
+                            listingsContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--surface); border-radius: var(--radius-md);"><p class="text-danger">Error loading properties. Make sure Firestore is initialized in Test Mode.</p></div>';
+                        }
                     });
-                    }).catch(err => console.error("Error fetching inviters:", err));
+                    }).catch(error => {
+                        console.error("Error fetching inviters:", error);
+                        if (error.code === 'permission-denied') {
+                            signOut(auth).then(() => window.location.href = 'login.html');
+                        }
+                    });
                 }
             }
 
