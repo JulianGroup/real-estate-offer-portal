@@ -1377,7 +1377,7 @@ const initializeAppLogic = () => {
                             
                             const currentListingCommission = parseFloat(propData.listingCommission) || 0;
                             const rows = [
-                                { label: 'Buyer\'s Agent', key: o => `${o.data.buyerAgentName} (${o.data.buyerAgentBrokerage || 'Independent'})` },
+                                { label: 'Buyer\'s Agent', key: o => `<div>${o.data.buyerAgentName}</div><div style="font-size: 0.85rem; color: var(--text-muted);">${o.data.buyerAgentBrokerage || 'Independent'}</div>` },
                                 { label: 'Status', key: o => {
                                     const s = o.data.status || 'pending';
                                     if (s === 'accepted') return '<span style="color: var(--success); font-weight: bold;">Accepted</span>';
@@ -1387,7 +1387,7 @@ const initializeAppLogic = () => {
                                 } },
                                 { label: 'Offer Price', key: o => o.data.price },
                                 { label: 'Buyer\'s Net Proceeds', key: o => `$${o.buyersNet.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` },
-                                { label: 'Financing Type', key: o => `${o.data.financingType} Loan` },
+                                { label: 'Financing Type', key: o => `${o.data.financingType}` },
                                 { label: 'Down Payment', key: o => `${o.data.downPaymentPercent}%` },
                                 { label: 'Deposit', key: o => o.data.deposit || '-' },
                                 { label: 'COE (Days)', key: o => o.data.coeDays || '-' },
