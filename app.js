@@ -359,8 +359,8 @@ const initializeAppLogic = () => {
                                 <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
                                     <a href="offer_management.html?id=${id}" class="btn btn-primary" style="width: 100%; text-align: center;">View Offers</a>
                                     <div class="flex justify-between">
-                                        <a href="offer_submission.html?id=${id}" class="btn btn-outline" style="width: 48%; text-align: center; padding: 0.5rem; font-size: 0.85rem;" target="_blank">Submit Offer</a>
-                                        <button class="btn btn-outline copy-portal-btn" data-id="${id}" style="width: 48%; text-align: center; padding: 0.5rem; font-size: 0.85rem;">Copy submit offer link</button>
+                                        <a href="offer_submission.html?id=${id}" class="btn btn-outline" style="width: 48%; text-align: center; padding: 0.5rem; font-size: 0.85rem;" target="_blank">Import Offer</a>
+                                        <button class="btn btn-outline copy-portal-btn" data-id="${id}" style="width: 48%; text-align: center; padding: 0.5rem; font-size: 0.85rem;">Copy Offer Link</button>
                                     </div>
                                 </div>
                             `;
