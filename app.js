@@ -1297,11 +1297,11 @@ const initializeAppLogic = () => {
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem;">
                                     <div class="form-group">
                                         <label class="form-label" style="color: var(--danger);">Private Notes (For You Only)</label>
-                                        <textarea class="form-control" rows="3" placeholder="Add your private thoughts here...">${data.privateNotes || ''}</textarea>
+                                        <textarea id="private-notes-${offerId}" class="form-control" rows="3" placeholder="Add your private thoughts here...">${data.privateNotes || ''}</textarea>
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label" style="color: var(--success);">Seller Notes (Visible to Seller)</label>
-                                        <textarea class="form-control" rows="3" placeholder="Notes to share with the seller...">${data.sellerNotes || ''}</textarea>
+                                        <textarea id="seller-notes-${offerId}" class="form-control" rows="3" placeholder="Notes to share with the seller...">${data.sellerNotes || ''}</textarea>
                                     </div>
                                 </div>
                             `;
@@ -1369,6 +1369,14 @@ const initializeAppLogic = () => {
                             
                             const currentListingCommission = parseFloat(propData.listingCommission) || 0;
                             const rows = [
+                                { label: 'Buyer\'s Agent', key: o => `${o.data.buyerAgentName} (${o.data.buyerAgentBrokerage || 'Independent'})` },
+                                { label: 'Status', key: o => {
+                                    const s = o.data.status || 'pending';
+                                    if (s === 'accepted') return '<span style="color: var(--success); font-weight: bold;">Accepted</span>';
+                                    if (s === 'counter offer') return '<span style="color: var(--warning); font-weight: bold;">Counter Offer</span>';
+                                    if (s === 'ignore') return '<span style="color: var(--danger); font-weight: bold;">Ignore</span>';
+                                    return '<span style="color: var(--text-muted); font-weight: bold;">In Review</span>';
+                                } },
                                 { label: 'Offer Price', key: o => o.data.price },
                                 { label: 'Buyer\'s Net Proceeds', key: o => `$${o.buyersNet.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` },
                                 { label: 'Buyer Agent Comp', key: o => o.data.buyerAgentCompPct ? `${o.data.buyerAgentCompPct}% ($${o.buyerAgentCompDollar.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})` : '-' },
@@ -1380,7 +1388,8 @@ const initializeAppLogic = () => {
                                 { label: 'COE (Days)', key: o => o.data.coeDays || '-' },
                                 { label: 'Loan Contingency', key: o => o.data.loanDays || '-' },
                                 { label: 'Appraisal Contingency', key: o => o.data.appraisalDays || '-' },
-                                { label: 'Inspection Contingency', key: o => o.data.inspectionDays || '-' }
+                                { label: 'Inspection Contingency', key: o => o.data.inspectionDays || '-' },
+                                { label: 'Seller Notes', key: o => o.data.sellerNotes ? `<div style="font-size: 0.85rem; max-width: 250px;">${o.data.sellerNotes}</div>` : '-' }
                             ];
                             
                             rows.forEach(r => {
@@ -1418,7 +1427,35 @@ const initializeAppLogic = () => {
                             btn.className = 'btn btn-primary mt-4';
                             btn.style.width = 'max-content';
                             btn.innerText = 'Save All Notes';
-                            btn.onclick = () => alert('Notes saved locally!');
+                            btn.onclick = async () => {
+                                btn.innerText = "Saving...";
+                                btn.disabled = true;
+                                try {
+                                    const updatePromises = processedOffers.map(offer => {
+                                        const privNote = document.getElementById(`private-notes-${offer.id}`)?.value || '';
+                                        const selNote = document.getElementById(`seller-notes-${offer.id}`)?.value || '';
+                                        return setDoc(doc(db, "offers", offer.id), {
+                                            privateNotes: privNote,
+                                            sellerNotes: selNote
+                                        }, { merge: true });
+                                    });
+                                    await Promise.all(updatePromises);
+                                    btn.innerText = "Saved Successfully!";
+                                    btn.style.background = "var(--success)";
+                                    btn.style.borderColor = "var(--success)";
+                                    setTimeout(() => {
+                                        btn.innerText = "Save All Notes";
+                                        btn.style.background = "";
+                                        btn.style.borderColor = "";
+                                        btn.disabled = false;
+                                    }, 3000);
+                                } catch (err) {
+                                    console.error("Error saving notes:", err);
+                                    alert("Error saving notes: " + err.message);
+                                    btn.innerText = "Save All Notes";
+                                    btn.disabled = false;
+                                }
+                            };
                             offersContainer.appendChild(btn);
                         }
 
