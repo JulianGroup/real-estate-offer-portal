@@ -1379,9 +1379,6 @@ const initializeAppLogic = () => {
                                 } },
                                 { label: 'Offer Price', key: o => o.data.price },
                                 { label: 'Buyer\'s Net Proceeds', key: o => `$${o.buyersNet.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` },
-                                { label: 'Buyer Agent Comp', key: o => o.data.buyerAgentCompPct ? `${o.data.buyerAgentCompPct}% ($${o.buyerAgentCompDollar.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})` : '-' },
-                                { label: 'Listing Agent Comp', key: o => currentListingCommission > 0 ? `${currentListingCommission}% ($${o.listingAgentCompDollar.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})` : '-' },
-                                { label: 'Seller Credit', key: o => o.data.sellerCredit || '-' },
                                 { label: 'Financing Type', key: o => `${o.data.financingType} Loan` },
                                 { label: 'Down Payment', key: o => `${o.data.downPaymentPercent}%` },
                                 { label: 'Deposit', key: o => o.data.deposit || '-' },
@@ -1389,6 +1386,9 @@ const initializeAppLogic = () => {
                                 { label: 'Loan Contingency', key: o => o.data.loanDays || '-' },
                                 { label: 'Appraisal Contingency', key: o => o.data.appraisalDays || '-' },
                                 { label: 'Inspection Contingency', key: o => o.data.inspectionDays || '-' },
+                                { label: 'Buyer Agent Comp', key: o => o.data.buyerAgentCompPct ? `${o.data.buyerAgentCompPct}% ($${o.buyerAgentCompDollar.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})` : '-' },
+                                { label: 'Listing Agent Comp', key: o => currentListingCommission > 0 ? `${currentListingCommission}% ($${o.listingAgentCompDollar.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})` : '-' },
+                                { label: 'Seller Credit', key: o => o.data.sellerCredit || '-' },
                                 { label: 'Seller Notes', key: o => o.data.sellerNotes ? `<div style="font-size: 0.85rem; max-width: 250px;">${o.data.sellerNotes}</div>` : '-' }
                             ];
                             
