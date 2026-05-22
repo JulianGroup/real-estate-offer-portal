@@ -927,11 +927,23 @@ const initializeAppLogic = () => {
         }
         const sellerCredit = document.getElementById('ai-seller-credit') ? document.getElementById('ai-seller-credit').value : '';
 
+        const chkProofFunds = document.getElementById('chk-proof-funds') ? document.getElementById('chk-proof-funds').checked : false;
+        const chkPreApproval = document.getElementById('chk-pre-approval') ? document.getElementById('chk-pre-approval').checked : false;
+        
+        const aiBuyerName = document.getElementById('ai-buyer-name') ? document.getElementById('ai-buyer-name').value : '';
+        const propAddressText = document.getElementById('public-prop-address') ? document.getElementById('public-prop-address').innerText : 'Property';
+        const streetName = propAddressText.split(',')[0].replace(/[^a-zA-Z0-9]/g, '_');
+        const safeBuyerName = aiBuyerName ? aiBuyerName.replace(/[^a-zA-Z0-9]/g, '_') : 'Buyer';
+
         // Upload documents to Firebase Storage
         const docs = [];
         const uploadDoc = async (file, type) => {
             if (!file) return;
-            const uniqueName = `${Date.now()}_${file.name}`;
+            let uniqueName = `${Date.now()}_${file.name}`;
+            if (type === 'Purchase Agreement' && aiBuyerName) {
+                const ext = file.name.split('.').pop();
+                uniqueName = `RPA-${streetName}-${safeBuyerName}.${ext}`;
+            }
             const storageRef = ref(storage, `offers/${propertyId}/${uniqueName}`);
             await uploadBytes(storageRef, file);
             const url = await getDownloadURL(storageRef);
@@ -941,6 +953,7 @@ const initializeAppLogic = () => {
         const fileRpa = document.getElementById('ai-file-rpa');
         const fileFunds = document.getElementById('ai-file-funds');
         const filePreapproval = document.getElementById('ai-file-preapproval');
+        const fileOther = document.getElementById('ai-file-other');
 
         try {
             if (btn) btn.innerText = 'Uploading documents...';
@@ -952,6 +965,9 @@ const initializeAppLogic = () => {
             }
             if (filePreapproval && filePreapproval.files) {
                 for(let i = 0; i < filePreapproval.files.length; i++) await uploadDoc(filePreapproval.files[i], 'Pre-Approval');
+            }
+            if (fileOther && fileOther.files) {
+                for(let i = 0; i < fileOther.files.length; i++) await uploadDoc(fileOther.files[i], 'Other Documents');
             }
             if (btn) btn.innerText = 'Saving offer...';
         } catch (uploadError) {
@@ -985,6 +1001,8 @@ const initializeAppLogic = () => {
                 sellerCredit: sellerCredit,
                 otherNotes: otherNotes,
                 documents: docs,
+                proofOfFundsReceived: chkProofFunds,
+                preApprovalReceived: chkPreApproval,
                 status: 'pending',
                 submittedAt: new Date(),
                 isManualEntry: isManual
@@ -1390,6 +1408,8 @@ const initializeAppLogic = () => {
                                 { label: 'Financing Type', key: o => `${o.data.financingType}` },
                                 { label: 'Down Payment', key: o => `${o.data.downPaymentPercent}%` },
                                 { label: 'Deposit', key: o => o.data.deposit || '-' },
+                                { label: 'Proof of Funds', key: o => o.data.proofOfFundsReceived ? '<span style="color: var(--success);">✅ Received</span>' : '-' },
+                                { label: 'Pre-Approval', key: o => o.data.preApprovalReceived ? '<span style="color: var(--success);">✅ Received</span>' : '-' },
                                 { label: 'COE (Days)', key: o => o.data.coeDays || '-' },
                                 { label: 'Loan Contingency', key: o => o.data.loanDays || '-' },
                                 { label: 'Appraisal Contingency', key: o => o.data.appraisalDays || '-' },
@@ -1760,6 +1780,7 @@ window.executeAIExtraction = async () => {
 
         // 3. Map to HTML elements
         const mappings = {
+            'ai-buyer-name': extracted.buyerName,
             'agent-brokerage': extracted.buyerBrokerage,
             'agent-name': extracted.buyerAgent,
             'agent-email': extracted.buyerAgentEmail,

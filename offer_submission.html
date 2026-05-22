@@ -46,25 +46,7 @@
                         <button type="button" id="btn-ai-extract" class="btn btn-outline" style="padding: 0.5rem; font-size: 0.85rem; border-color: var(--secondary); color: var(--secondary); display: none; width: 100%; margin-top: 0.5rem;">✨ CLICK to Auto-Fill from Contract</button>
                     </div>
 
-                    <!-- Proof of Funds -->
-                    <div>
-                        <label class="form-label">Source of Funds (Bank Statement)</label>
-                        <label for="ai-file-funds" class="file-upload-area" style="cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; padding: 1.5rem; height: 100px;">
-                            <p id="ai-file-funds-text" style="margin: 0; font-size: 0.85rem;">📄 Click to upload Proof of Funds (.pdf)</p>
-                            <input type="file" id="ai-file-funds" accept=".pdf" multiple style="display: none;" onchange="document.getElementById('ai-file-funds-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Click to upload Proof of Funds (.pdf)')">
-                        </label>
-                    </div>
-
-                    <!-- Pre-Approval -->
-                    <div class="mb-6">
-                        <label class="form-label">Pre-Approval Letter</label>
-                        <label for="ai-file-preapproval" class="file-upload-area" style="cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; padding: 1.5rem; height: 100px;">
-                            <p id="ai-file-preapproval-text" style="margin: 0; font-size: 0.85rem;">📄 Click to upload Pre-Approval (.pdf)</p>
-                            <input type="file" id="ai-file-preapproval" accept=".pdf" multiple style="display: none;" onchange="document.getElementById('ai-file-preapproval-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Click to upload Pre-Approval (.pdf)')">
-                        </label>
-                    </div>
-                </div>
-
+                <input type="hidden" id="ai-buyer-name" value="">
                 <h3 class="mb-4" style="font-size: 1.1rem; color: var(--primary-light);">Buyer's Agent Information</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
@@ -153,8 +135,53 @@
                 </div>
 
 
+                <div class="form-group mb-6" style="padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <label class="form-label" style="font-weight: 600; margin-bottom: 0.5rem;">Document received:</label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.95rem; cursor: pointer;">
+                        <input type="checkbox" id="chk-proof-funds" style="width: 18px; height: 18px; accent-color: var(--primary);">
+                        Proof of Funds
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; cursor: pointer;">
+                        <input type="checkbox" id="chk-pre-approval" style="width: 18px; height: 18px; accent-color: var(--primary);">
+                        Pre-approval Letter
+                    </label>
+                </div>
                 
-                <button type="submit" id="btn-submit-public" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Submit Offer</button>
+                <button type="submit" id="btn-submit-public" class="btn btn-primary" style="width: 100%; margin-bottom: 2rem;">Submit Offer</button>
+
+                <div style="padding: 1.5rem; background-color: rgba(255, 255, 255, 0.03); border: 1px dashed var(--border); border-radius: var(--radius-md); margin-bottom: 2rem;">
+                    <h3 class="mb-2" style="font-size: 1.1rem; color: var(--primary-light);">Optional Document Repository</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Upload any additional supporting documents here. These will be sent securely to the listing agent.</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <!-- Proof of Funds -->
+                        <div>
+                            <label class="form-label">Source of Funds</label>
+                            <label for="ai-file-funds" class="file-upload-area" style="cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; padding: 1rem; height: 80px;">
+                                <p id="ai-file-funds-text" style="margin: 0; font-size: 0.8rem;">📄 Upload Proof of Funds</p>
+                                <input type="file" id="ai-file-funds" accept=".pdf" multiple style="display: none;" onchange="document.getElementById('ai-file-funds-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Upload Proof of Funds')">
+                            </label>
+                        </div>
+
+                        <!-- Pre-Approval -->
+                        <div>
+                            <label class="form-label">Pre-Approval Letter</label>
+                            <label for="ai-file-preapproval" class="file-upload-area" style="cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; padding: 1rem; height: 80px;">
+                                <p id="ai-file-preapproval-text" style="margin: 0; font-size: 0.8rem;">📄 Upload Pre-Approval</p>
+                                <input type="file" id="ai-file-preapproval" accept=".pdf" multiple style="display: none;" onchange="document.getElementById('ai-file-preapproval-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Upload Pre-Approval')">
+                            </label>
+                        </div>
+
+                        <!-- Other Documents -->
+                        <div>
+                            <label class="form-label">Other Documents</label>
+                            <label for="ai-file-other" class="file-upload-area" style="cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; padding: 1rem; height: 80px;">
+                                <p id="ai-file-other-text" style="margin: 0; font-size: 0.8rem;">📄 Upload Other Docs</p>
+                                <input type="file" id="ai-file-other" accept=".pdf" multiple style="display: none;" onchange="document.getElementById('ai-file-other-text').innerText = this.files.length > 1 ? '✅ ' + this.files.length + ' files selected' : (this.files[0] ? '✅ ' + this.files[0].name : '📄 Upload Other Docs')">
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </form>
         </div>
 
@@ -189,6 +216,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <script src="api_keys.js"></script>
-    <script type="module" src="app.js?v=12"></script>
+    <script type="module" src="app.js?v=28"></script>
 </body>
 </html>

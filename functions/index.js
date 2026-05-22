@@ -26,9 +26,11 @@ I will provide the raw text of a Purchase Agreement.
 CRITICAL RULE: Many forms contain printed boilerplate default values (e.g. "17 Days"). You MUST prioritize explicitly filled-in, typed, or handwritten override numbers over the printed defaults. Carefully scan the text near the contingency clauses to see if a custom number of days was written in by the buyer.
 CRITICAL RULE 2: PDF text extraction scrambles checkboxes. Do NOT attempt to extract the Financing Type.
 CRITICAL RULE 3: For the Agent information, you MUST ONLY extract the BUYER'S Brokerage Firm and BUYER'S Agent. Specifically locate the section titled "Buyer's Brokerage Firm" (usually on the last page). NEVER extract the Seller's Brokerage Firm or Seller's Agent.
+CRITICAL RULE 4: Extract the Buyer's Name specifically from Section 1A of the Purchase Agreement.
 
 Extract the following information and return ONLY a valid JSON object matching this exact structure:
 {
+  "buyerName": "string or null",
   "buyerBrokerage": "string or null",
   "buyerBrokerageDre": "string or null",
   "buyerAgent": "string or null",
