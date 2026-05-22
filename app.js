@@ -1339,15 +1339,12 @@ const initializeAppLogic = () => {
                                 <div class="flex justify-between items-center mb-4 border-bottom pb-4" style="border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
                                     <div>
                                         <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">${data.price} ${highestBadge}</h3>
-                                        <p class="text-muted" style="margin-bottom: 0.5rem;">${data.financingType} Loan • ${data.downPaymentPercent}% Down • By: ${data.buyerAgentName} (${data.buyerAgentBrokerage || 'Independent'})</p>
-                                        ${data.buyerAgentCompPct ? `<p class="text-muted" style="margin-bottom: 0.5rem;"><strong>Buyer Agent Comp:</strong> ${data.buyerAgentCompPct}% ($${parseFloat(data.buyerAgentCompDollar).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</p>` : ''}
-                                        ${currentListingCommission > 0 ? `<p class="text-muted" style="margin-bottom: 0.5rem;"><strong>Listing Agent Comp:</strong> ${currentListingCommission}% ($${listingAgentCompDollar.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</p>` : ''}
-                                        ${data.sellerCredit ? `<p class="text-muted" style="margin-bottom: 0.5rem;"><strong>Seller Credit:</strong> ${data.sellerCredit}</p>` : ''}
-                                        <p class="text-success" style="margin-bottom: 0.5rem; font-size: 1.1rem;"><strong>Buyer's Net (Proceeds):</strong> $${buyersNet.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
-                                        <div style="display: flex; gap: 0.5rem; font-size: 0.8rem; flex-wrap: wrap;" id="offer-${offerId}-dates">
-                                            <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);"><strong>Deposit:</strong> ${data.deposit}</span>
+                                        <p class="text-muted" style="margin-bottom: 0.5rem;"><strong>Buyer:</strong> ${data.buyerName || 'Not specified'} • <strong>By:</strong> ${data.buyerAgentName} (${data.buyerAgentBrokerage || 'Independent'})</p>
+                                        <div style="display: flex; gap: 0.5rem; font-size: 0.8rem; flex-wrap: wrap; margin-bottom: 0.5rem;" id="offer-${offerId}-dates">
+                                            <span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);"><strong>Deposit:</strong> ${data.deposit || '-'}</span>
                                             ${(() => {
                                                 const formatCalcDate = (days, label) => {
+                                                    if (!days) return '';
                                                     let html = `<span style="background: var(--background); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid var(--border);" class="calc-date" data-days="${days}"><strong>${label}:</strong> ${days} Days</span>`;
                                                     if (data.status === 'accepted' && data.acceptedDate) {
                                                         const pDays = parseInt(days);
@@ -1369,6 +1366,9 @@ const initializeAppLogic = () => {
                                                        formatCalcDate(data.inspectionDays, "Inspection");
                                             })()}
                                         </div>
+                                        ${data.buyerAgentCompPct ? `<p class="text-muted" style="margin-bottom: 0.5rem;"><strong>Buyer Agent Comp:</strong> ${data.buyerAgentCompPct}% ($${parseFloat(data.buyerAgentCompDollar).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</p>` : ''}
+                                        ${data.sellerCredit ? `<p class="text-muted" style="margin-bottom: 0.5rem;"><strong>Seller Credit:</strong> ${data.sellerCredit}</p>` : ''}
+                                        <p class="text-success" style="margin-bottom: 0.5rem; font-size: 1.1rem;"><strong>Buyer's Net after commission and seller credit:</strong> $${buyersNet.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
                                     </div>
                                     ${actionButtonsHtml}
                                 </div>
