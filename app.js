@@ -1054,7 +1054,7 @@ const initializeAppLogic = () => {
 
                     const heroHeader = document.getElementById('property-hero-header');
                     if (heroHeader && propData.photoUrl) {
-                        heroHeader.style.backgroundImage = `linear-gradient(rgba(26, 54, 93, 0.8), rgba(26, 54, 93, 0.8)), url('${propData.photoUrl}')`;
+                        heroHeader.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6)), url('${propData.photoUrl}')`;
                     }
                     
                     const formatPhone = (str) => {

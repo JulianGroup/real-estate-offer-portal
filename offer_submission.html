@@ -9,13 +9,15 @@
 <body>
     <nav class="navbar">
         <div class="container">
-            <div class="logo">Offer<span>Portal</span></div>
-            <!-- Public facing, no dashboard links for the buyer agent -->
+            <div class="logo">Home Offer<span>Portal</span></div>
+            <div>
+                <a href="index.html" class="btn btn-outline">Dashboard</a>
+            </div>
         </div>
     </nav>
 
     <!-- Property Hero Section -->
-    <header id="property-hero-header" style="background-image: linear-gradient(rgba(26, 54, 93, 0.8), rgba(26, 54, 93, 0.8)), url('https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; color: white; padding: 4rem 0; margin-bottom: 2rem;">
+    <header id="property-hero-header" style="background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; color: white; padding: 4rem 0; margin-bottom: 2rem;">
         <div class="container">
             <h1 id="public-prop-address" style="color: white; font-size: 3rem;">Loading Property...</h1>
             <p id="public-prop-price" style="font-size: 1.25rem; opacity: 0.9;">Please wait...</p>
@@ -223,6 +225,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
     <script src="api_keys.js"></script>
-    <script type="module" src="app.js?v=29"></script>
+    <script type="module" src="app.js?v=30"></script>
 </body>
 </html>
