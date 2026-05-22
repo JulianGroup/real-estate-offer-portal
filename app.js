@@ -985,6 +985,7 @@ const initializeAppLogic = () => {
         try {
             await addDoc(collection(db, "offers"), {
                 propertyId: propertyId,
+                buyerName: aiBuyerName,
                 buyerAgentName: agentName,
                 buyerAgentEmail: agentEmail,
                 buyerAgentBrokerage: agentBrokerage,
