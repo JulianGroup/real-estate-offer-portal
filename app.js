@@ -1386,7 +1386,7 @@ const initializeAppLogic = () => {
                                         <option value="ignore" ${currentStatus === 'ignore' ? 'selected' : ''}>Ignore</option>
                                     </select>
                                     <button class="btn btn-outline" onclick="window.viewDocuments('${offerId}')">View Documents</button>
-                                    <a href="edit_offer.html?offerId=${offerId}&propertyId=${id}" class="btn btn-outline" style="text-align: center; border-color: var(--primary); color: var(--primary);">Edit Offer</a>
+                                    <a href="edit_offer.html?offerId=${offerId}&propertyId=${propertyId}" class="btn btn-outline" style="text-align: center; border-color: var(--primary); color: var(--primary);">Edit Offer</a>
                                 </div>
                             `;
 
@@ -1497,7 +1497,7 @@ const initializeAppLogic = () => {
                                 { label: 'Listing Agent Comp', key: o => currentListingCommission > 0 ? `${currentListingCommission}% ($${o.listingAgentCompDollar.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})` : '-' },
                                 { label: 'Seller Credit', key: o => o.data.sellerCredit || '-' },
                                 { label: 'Seller Notes', key: o => o.data.sellerNotes ? `<div style="font-size: 0.85rem; max-width: 250px;">${o.data.sellerNotes}</div>` : '-' },
-                                { label: 'Actions', key: o => `<a href="edit_offer.html?offerId=${o.id}&propertyId=${id}" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);">Edit Offer</a>` }
+                                { label: 'Actions', key: o => `<a href="edit_offer.html?offerId=${o.id}&propertyId=${propertyId}" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);">Edit Offer</a>` }
                             ];
                             
                             rows.forEach(r => {
