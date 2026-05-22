@@ -883,7 +883,84 @@ const initializeAppLogic = () => {
         });
     }
 
-    // 7. Offer Submission Handler (Shared for Manual and Public)
+    // 7. Edit Offer Handler
+    const editOfferForm = document.getElementById('edit-offer-form');
+    if (editOfferForm) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const offerId = urlParams.get('offerId');
+        if (offerId) {
+            getDoc(doc(db, "offers", offerId)).then(docSnap => {
+                if(docSnap.exists()) {
+                    const data = docSnap.data();
+                    if(document.getElementById('agent-name')) document.getElementById('agent-name').value = data.buyerAgentName || '';
+                    if(document.getElementById('agent-email')) document.getElementById('agent-email').value = data.buyerAgentEmail || '';
+                    if(document.getElementById('agent-brokerage')) document.getElementById('agent-brokerage').value = data.buyerAgentBrokerage || '';
+                    if(document.getElementById('ai-price')) document.getElementById('ai-price').value = data.price || '';
+                    if(document.getElementById('ai-deposit')) document.getElementById('ai-deposit').value = data.deposit || '';
+                    if(document.getElementById('ai-agent-comp-pct')) document.getElementById('ai-agent-comp-pct').value = data.buyerAgentCompPct || '';
+                    if(document.getElementById('ai-seller-credit')) document.getElementById('ai-seller-credit').value = data.sellerCredit || '';
+                    if(document.getElementById('ai-down')) document.getElementById('ai-down').value = data.downPaymentPercent || '';
+                    if(document.getElementById('ai-finance')) document.getElementById('ai-finance').value = data.financingType || 'Conventional';
+                    if(document.getElementById('ai-coe')) document.getElementById('ai-coe').value = data.coeDays || '';
+                    if(document.getElementById('ai-loan')) document.getElementById('ai-loan').value = data.loanDays || '';
+                    if(document.getElementById('ai-appraisal')) document.getElementById('ai-appraisal').value = data.appraisalDays || '';
+                    if(document.getElementById('ai-inspection')) document.getElementById('ai-inspection').value = data.inspectionDays || '';
+                }
+            });
+        }
+
+        editOfferForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-edit');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = 'Saving...';
+            }
+
+            const price = document.getElementById('ai-price').value;
+            const compPct = document.getElementById('ai-agent-comp-pct') ? document.getElementById('ai-agent-comp-pct').value : '';
+            let compDollar = 0;
+            if (compPct && price) {
+                const priceNum = parseFloat(price.replace(/[^0-9.-]+/g,""));
+                const pctNum = parseFloat(compPct);
+                if (!isNaN(priceNum) && !isNaN(pctNum)) {
+                    compDollar = (priceNum * (pctNum / 100)).toFixed(2);
+                }
+            }
+
+            try {
+                await setDoc(doc(db, "offers", offerId), {
+                    buyerAgentName: document.getElementById('agent-name').value,
+                    buyerAgentEmail: document.getElementById('agent-email').value,
+                    buyerAgentBrokerage: document.getElementById('agent-brokerage') ? document.getElementById('agent-brokerage').value : '',
+                    price: price,
+                    deposit: document.getElementById('ai-deposit').value,
+                    downPaymentPercent: document.getElementById('ai-down').value,
+                    financingType: document.getElementById('ai-finance').value,
+                    coeDays: document.getElementById('ai-coe').value,
+                    loanDays: document.getElementById('ai-loan').value,
+                    appraisalDays: document.getElementById('ai-appraisal').value,
+                    inspectionDays: document.getElementById('ai-inspection').value,
+                    buyerAgentCompPct: compPct,
+                    buyerAgentCompDollar: compDollar,
+                    sellerCredit: document.getElementById('ai-seller-credit') ? document.getElementById('ai-seller-credit').value : ''
+                }, { merge: true });
+
+                alert("Offer updated successfully!");
+                const propId = urlParams.get('propertyId');
+                window.location.href = propId ? `offer_management.html?id=${propId}` : 'index.html';
+            } catch (err) {
+                console.error("Error updating offer:", err);
+                alert("Failed to update offer: " + err.message);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = 'Save Changes';
+                }
+            }
+        });
+    }
+
+    // 8. Offer Submission Handler (Shared for Manual and Public)
     const handleOfferSubmit = async (e, isManual) => {
         e.preventDefault();
         const btnId = isManual ? 'btn-submit-manual' : 'btn-submit-public';
@@ -1309,6 +1386,7 @@ const initializeAppLogic = () => {
                                         <option value="ignore" ${currentStatus === 'ignore' ? 'selected' : ''}>Ignore</option>
                                     </select>
                                     <button class="btn btn-outline" onclick="window.viewDocuments('${offerId}')">View Documents</button>
+                                    <a href="edit_offer.html?offerId=${offerId}&propertyId=${id}" class="btn btn-outline" style="text-align: center; border-color: var(--primary); color: var(--primary);">Edit Offer</a>
                                 </div>
                             `;
 
@@ -1418,7 +1496,8 @@ const initializeAppLogic = () => {
                                 { label: 'Buyer Agent Comp', key: o => o.data.buyerAgentCompPct ? `${o.data.buyerAgentCompPct}% ($${o.buyerAgentCompDollar.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})` : '-' },
                                 { label: 'Listing Agent Comp', key: o => currentListingCommission > 0 ? `${currentListingCommission}% ($${o.listingAgentCompDollar.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})` : '-' },
                                 { label: 'Seller Credit', key: o => o.data.sellerCredit || '-' },
-                                { label: 'Seller Notes', key: o => o.data.sellerNotes ? `<div style="font-size: 0.85rem; max-width: 250px;">${o.data.sellerNotes}</div>` : '-' }
+                                { label: 'Seller Notes', key: o => o.data.sellerNotes ? `<div style="font-size: 0.85rem; max-width: 250px;">${o.data.sellerNotes}</div>` : '-' },
+                                { label: 'Actions', key: o => `<a href="edit_offer.html?offerId=${o.id}&propertyId=${id}" class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border-color: var(--primary); color: var(--primary);">Edit Offer</a>` }
                             ];
                             
                             rows.forEach(r => {
