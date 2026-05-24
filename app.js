@@ -892,6 +892,7 @@ const initializeAppLogic = () => {
             getDoc(doc(db, "offers", offerId)).then(docSnap => {
                 if(docSnap.exists()) {
                     const data = docSnap.data();
+                    if(document.getElementById('ai-buyer-name')) document.getElementById('ai-buyer-name').value = data.buyerName || '';
                     if(document.getElementById('agent-name')) document.getElementById('agent-name').value = data.buyerAgentName || '';
                     if(document.getElementById('agent-email')) document.getElementById('agent-email').value = data.buyerAgentEmail || '';
                     if(document.getElementById('agent-brokerage')) document.getElementById('agent-brokerage').value = data.buyerAgentBrokerage || '';
@@ -929,7 +930,51 @@ const initializeAppLogic = () => {
             }
 
             try {
+                if (btn) btn.innerText = 'Uploading documents...';
+                const propertyId = urlParams.get('propertyId');
+                const aiBuyerName = document.getElementById('ai-buyer-name') ? document.getElementById('ai-buyer-name').value : '';
+                const safeBuyerName = aiBuyerName ? aiBuyerName.replace(/[^a-zA-Z0-9]/g, '_') : 'Buyer';
+                
+                const docsToUpload = [];
+                const uploadDoc = async (file, type) => {
+                    if (!file) return;
+                    let uniqueName = `${Date.now()}_${file.name}`;
+                    if (type === 'Purchase Agreement' && aiBuyerName) {
+                        const ext = file.name.split('.').pop();
+                        uniqueName = `RPA-Property-${safeBuyerName}.${ext}`;
+                    }
+                    const storageRef = ref(storage, `offers/${propertyId}/${uniqueName}`);
+                    await uploadBytes(storageRef, file);
+                    const url = await getDownloadURL(storageRef);
+                    docsToUpload.push({ type: type, name: file.name, url: url });
+                };
+
+                const fileRpa = document.getElementById('ai-file-rpa');
+                const fileFunds = document.getElementById('ai-file-funds');
+                const fileCounter = document.getElementById('ai-file-counter');
+
+                if (fileRpa && fileRpa.files) {
+                    for(let i = 0; i < fileRpa.files.length; i++) await uploadDoc(fileRpa.files[i], 'Purchase Agreement');
+                }
+                if (fileFunds && fileFunds.files) {
+                    for(let i = 0; i < fileFunds.files.length; i++) await uploadDoc(fileFunds.files[i], 'Proof of Funds');
+                }
+                if (fileCounter && fileCounter.files) {
+                    for(let i = 0; i < fileCounter.files.length; i++) await uploadDoc(fileCounter.files[i], 'Counter Offer');
+                }
+
+                if (btn) btn.innerText = 'Saving offer...';
+
+                // Fetch existing docs to append to them
+                let existingDocs = [];
+                const docSnap = await getDoc(doc(db, "offers", offerId));
+                if (docSnap.exists()) {
+                    existingDocs = docSnap.data().documents || [];
+                }
+                const updatedDocs = [...existingDocs, ...docsToUpload];
+
                 await setDoc(doc(db, "offers", offerId), {
+                    buyerName: aiBuyerName,
                     buyerAgentName: document.getElementById('agent-name').value,
                     buyerAgentEmail: document.getElementById('agent-email').value,
                     buyerAgentBrokerage: document.getElementById('agent-brokerage') ? document.getElementById('agent-brokerage').value : '',
@@ -943,7 +988,8 @@ const initializeAppLogic = () => {
                     inspectionDays: document.getElementById('ai-inspection').value,
                     buyerAgentCompPct: compPct,
                     buyerAgentCompDollar: compDollar,
-                    sellerCredit: document.getElementById('ai-seller-credit') ? document.getElementById('ai-seller-credit').value : ''
+                    sellerCredit: document.getElementById('ai-seller-credit') ? document.getElementById('ai-seller-credit').value : '',
+                    documents: updatedDocs
                 }, { merge: true });
 
                 alert("Offer updated successfully!");
